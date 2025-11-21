@@ -1,0 +1,1 @@
+export { WalletSelectionDialog } from './WalletSelectionDialog'; 

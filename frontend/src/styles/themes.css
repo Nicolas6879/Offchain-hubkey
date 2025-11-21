@@ -1,0 +1,239 @@
+/* ==========================================
+   OFFCHAIN HUBKEY - SISTEMA DE TEMAS HSL
+   ========================================== */
+
+/* Tema padrão (Dark Mode) */
+:root {
+  /* ===== CORES DE FUNDO ===== */
+  --bg-main: hsl(0, 0%, 0%);         /* Fundo principal - preto */
+  --bg-primary: hsl(0, 0%, 0%);      /* Fundo principal - preto */
+  --bg-surface-1: hsl(0, 0%, 5%);    /* Cards/superfícies nível 1 */
+  --bg-surface-2: hsl(0, 0%, 10%);   /* Botões/superfícies nível 2 */
+  
+  /* ===== CORES DE TEXTO ===== */
+  --text-primary: hsl(0, 0%, 95%);   /* Títulos - branco quase puro */
+  --text-secondary: hsl(0, 0%, 70%); /* Subtítulos - cinza claro */
+  
+  /* ===== COR PRIMÁRIA (Vermelho Alaranjado) ===== */
+  --primary-light: hsl(14, 100%, 67%);  /* Hover states */
+  --primary-main: hsl(14, 100%, 57%);   /* Cor principal */
+  --primary-dark: hsl(14, 100%, 47%);   /* Estados ativos */
+  --primary-contrast: hsl(0, 0%, 100%); /* Texto sobre primária */
+  
+  /* ===== BORDAS E SOMBRAS ===== */
+  --border-color: hsl(0, 0%, 15%);
+  --border-light: hsl(0, 0%, 20%);
+  --shadow-color: hsla(0, 0%, 0%, 0.3);
+  
+  /* ===== TRANSPARÊNCIAS ===== */
+  --bg-glass: hsla(0, 0%, 5%, 0.8);     /* Fundos com transparência */
+  --bg-overlay: hsla(0, 0%, 0%, 0.7);   /* Overlays */
+}
+
+/* Light Mode */
+[data-theme="light"] {
+  /* ===== CORES DE FUNDO ===== */
+  --bg-main: hsl(0, 0%, 90%);         /* Fundo principal - cinza claro */
+  --bg-primary: hsl(0, 0%, 90%);      /* Fundo principal - cinza claro */
+  --bg-surface-1: hsl(0, 0%, 95%);    /* Cards/superfícies nível 1 */
+  --bg-surface-2: hsl(0, 0%, 100%);   /* Botões/superfícies nível 2 - branco */
+  
+  /* ===== CORES DE TEXTO ===== */
+  --text-primary: hsl(0, 0%, 5%);     /* Títulos - quase preto */
+  --text-secondary: hsl(0, 0%, 30%);  /* Subtítulos - cinza escuro */
+  
+  /* ===== BORDAS E SOMBRAS ===== */
+  --border-color: hsl(0, 0%, 85%);
+  --border-light: hsl(0, 0%, 80%);
+  --shadow-color: hsla(0, 0%, 0%, 0.1);
+  
+  /* ===== TRANSPARÊNCIAS ===== */
+  --bg-glass: hsla(0, 0%, 95%, 0.9);   /* Fundos com transparência */
+  --bg-overlay: hsla(0, 0%, 100%, 0.8); /* Overlays */
+}
+
+/* ==========================================
+   APLICAÇÃO DAS VARIÁVEIS NOS ELEMENTOS
+   ========================================== */
+
+/* Body e elementos base */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Títulos */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+}
+
+/* Texto secundário */
+.text-secondary, 
+.subtitle,
+small,
+.MuiTypography-body2 {
+  color: var(--text-secondary);
+}
+
+/* ===== CARDS E SUPERFÍCIES ===== */
+.card,
+.surface,
+.MuiCard-root,
+.MuiPaper-root {
+  background-color: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+/* ===== BOTÕES ===== */
+.btn,
+.MuiButton-root {
+  background-color: var(--bg-surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.btn:hover,
+.MuiButton-root:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-contrast);
+  border-color: var(--primary-light);
+}
+
+/* Botões primários */
+.btn-primary,
+.MuiButton-contained {
+  background-color: var(--primary-main);
+  color: var(--primary-contrast);
+  border-color: var(--primary-main);
+}
+
+.btn-primary:hover,
+.MuiButton-contained:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* ===== NAVBAR ===== */
+.navbar,
+.MuiAppBar-root {
+  background-color: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== INPUTS E FORMULÁRIOS ===== */
+.input,
+.MuiTextField-root input,
+.MuiOutlinedInput-root {
+  background-color: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.input:focus,
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--primary-main);
+}
+
+/* ===== MENUS E DROPDOWNS ===== */
+.menu,
+.dropdown,
+.MuiMenu-paper {
+  background-color: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.menu-item,
+.MuiMenuItem-root {
+  color: var(--text-primary);
+}
+
+.menu-item:hover,
+.MuiMenuItem-root:hover {
+  background-color: var(--bg-surface-2);
+}
+
+/* ===== LINKS ===== */
+a {
+  color: var(--primary-main);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+/* ===== DIVIDERS ===== */
+.divider,
+.MuiDivider-root {
+  border-color: var(--border-color);
+}
+
+/* ===== CHIPS E BADGES ===== */
+.chip,
+.badge,
+.MuiChip-root {
+  background-color: var(--bg-surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+/* ===== SCROLLBARS ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface-1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-main);
+}
+
+/* ===== UTILITÁRIOS ===== */
+.bg-primary { background-color: var(--bg-primary); }
+.bg-surface-1 { background-color: var(--bg-surface-1); }
+.bg-surface-2 { background-color: var(--bg-surface-2); }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+
+.border { border-color: var(--border-color); }
+.border-light { border-color: var(--border-light); }
+
+.text-brand { color: var(--primary-main); }
+.bg-brand { background-color: var(--primary-main); }
+
+/* ===== ANIMAÇÕES ===== */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ===== GLASS EFFECTS ===== */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-light);
+}
+
+.overlay {
+  background: var(--bg-overlay);
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: blur(5px);
+  }
+} 

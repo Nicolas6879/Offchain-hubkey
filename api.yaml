@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  title: Offchain Membership API
+  version: 1.0.0
+tags:
+  - name: Join Request
+  - name: Membership
+  - name: NFT
+  - name: Hub Access
+paths:
+  /join-request:
+    post:
+      tags: [Join Request]
+      summary: Envia solicitação para se tornar membro do grupo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                phone:
+                  type: string
+                email:
+                  type: string
+                walletAddress:
+                  type: string
+      responses:
+        '200':
+          description: Solicitação registrada com sucesso
+
+  /join-request/{id}/approve:
+    post:
+      tags: [Join Request]
+      summary: Aprova solicitação de entrada
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Solicitação aprovada
+
+  /join-request/{id}/reject:
+    post:
+      tags: [Join Request]
+      summary: Rejeita solicitação de entrada
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Solicitação rejeitada
+
+  /nft/generate-pfp:
+    post:
+      tags: [NFT]
+      summary: Gera imagem personalizada para membro
+      responses:
+        '200':
+          description: PFP gerada com sucesso
+
+  /nft/mint:
+    post:
+      tags: [NFT]
+      summary: Faz mint da NFT
+      responses:
+        '200':
+          description: NFT mintada
+
+  /nft/send:
+    post:
+      tags: [NFT]
+      summary: Envia NFT para carteira do usuário
+      responses:
+        '200':
+          description: NFT enviada
+
+  /hub-access/request:
+    post:
+      tags: [Hub Access]
+      summary: Usuário solicita acesso a um hub parceiro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                walletAddress:
+                  type: string
+                hubId:
+                  type: string
+      responses:
+        '200':
+          description: Solicitação de acesso registrada
+
+  /hub-access/{id}/notify:
+    post:
+      tags: [Hub Access]
+      summary: Envia email com dados do usuário ao hub
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email enviado
+
+  /join-request/status/{wallet}:
+    get:
+      tags: [Join Request]
+      summary: Retorna status da solicitação de entrada
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status retornado
+
+  /hub-access/status/{wallet}:
+    get:
+      tags: [Hub Access]
+      summary: Retorna status de acesso aos hubs
+      parameters:
+        - in: path
+          name: wallet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status retornado
+
+  /hub-access/{id}/log:
+    post:
+      tags: [Hub Access]
+      summary: Registra entrada do usuário no hub
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                walletAddress:
+                  type: string
+                timestamp:
+                  type: string
+                hubId:
+                  type: string
+                signature:
+                  type: string
+      responses:
+        '200':
+          description: Log registrado
+
+  /membership/revoke:
+    post:
+      tags: [Membership]
+      summary: Revoga acesso ou NFT de membro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                walletAddress:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Acesso revogado

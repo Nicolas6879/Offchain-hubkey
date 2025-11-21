@@ -1,0 +1,548 @@
+/* ===== HUB CONTROLLER STYLES ===== */
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.hubController {
+  width: 100%;
+}
+
+/* ===== HEADER SECTION ===== */
+.hubControllerHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.pageIcon {
+  font-size: 3rem !important;
+  color: var(--primary-main);
+  margin-bottom: 1rem;
+}
+
+.titulo {
+  margin: 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ===== HUB HEADER ===== */
+.hubHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-main));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsla(14, 100%, 57%, 0.4);
+}
+
+.buttonIcon {
+  font-size: 1.2rem !important;
+}
+
+.error_message {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.error_message.fullwidth {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* ===== LOADING ===== */
+.loadingContainer {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* ===== HUB GRID ===== */
+.hubGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* ===== HUB CARDS ===== */
+.hubCard {
+  background: var(--bg-surface-1);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.hubCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-main);
+}
+
+.hubCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface-2);
+}
+
+.hubNameSection {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.hubName {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.statusBadge {
+  margin-bottom: 0.5rem;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status.inactive {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.statusIcon {
+  font-size: 1rem !important;
+}
+
+/* ===== HUB ACTIONS ===== */
+.hubActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.actionButton.edit {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.actionButton.edit:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+  transform: scale(1.05);
+}
+
+.actionButton.delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.actionButton.delete:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: scale(1.05);
+}
+
+.actionButton svg {
+  font-size: 1.2rem !important;
+}
+
+/* ===== HUB INFO ===== */
+.hubInfo {
+  padding: 1.5rem;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+}
+
+.infoItem:last-child {
+  margin-bottom: 0;
+}
+
+.infoItem.description {
+  align-items: flex-start;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.infoIcon {
+  color: var(--primary-main);
+  font-size: 1.2rem !important;
+  flex-shrink: 0;
+}
+
+.infoItem span {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.infoItem a {
+  color: var(--primary-main);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.infoItem a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.hubMeta {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.membershipStatus {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ===== MODAL STYLES ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: var(--bg-surface-1);
+  padding: 0;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border-color);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface-2);
+}
+
+.modalIcon {
+  color: var(--primary-main);
+  font-size: 1.8rem !important;
+}
+
+.modalHeader .titulo {
+  margin: 0;
+  font-size: 1.5rem;
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: var(--text-primary);
+}
+
+/* ===== FORM STYLES ===== */
+.formModal {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2rem;
+}
+
+.formModal input,
+.formModal textarea {
+  padding: 1rem;
+  font-size: 1rem;
+  background-color: var(--bg-surface-2);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.formModal input:focus,
+.formModal textarea:focus {
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.formModal textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 120px;
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0.5rem 0;
+  flex-wrap: wrap;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary-main);
+  cursor: pointer;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.modalActions .botao_submit {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* ===== BUTTON STYLES ===== */
+.botao_submit {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.botao_submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.botao_submit:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-main));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsla(14, 100%, 57%, 0.4);
+}
+
+.botao_submit:hover::before {
+  left: 100%;
+}
+
+.botao_submit:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px hsla(14, 100%, 57%, 0.3);
+}
+
+.botao_submit.secondary {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.botao_submit.secondary:hover {
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+  color: var(--primary-contrast);
+  border-color: var(--primary-main);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px hsla(14, 100%, 57%, 0.3);
+}
+
+.botao_submit.small {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .hubGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .hubCardHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .hubNameSection {
+    margin-right: 0;
+  }
+
+  .hubActions {
+    align-self: flex-end;
+  }
+
+  .inputRow {
+    grid-template-columns: 1fr;
+  }
+
+  .checkboxGroup {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .modalActions .botao_submit {
+    width: 100%;
+  }
+
+  .modalContent {
+    width: 95%;
+    margin: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hubActions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pageIcon {
+    font-size: 2.5rem !important;
+  }
+
+  .titulo {
+    font-size: 1.8rem;
+  }
+
+  .modalHeader {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+  }
+
+  .formModal {
+    padding: 1.5rem;
+  }
+}
+  

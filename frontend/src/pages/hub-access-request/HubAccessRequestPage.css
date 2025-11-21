@@ -1,0 +1,284 @@
+.new-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Ensures the container takes full viewport height */
+  padding: 1rem; /* Adds some padding around the content */
+  box-sizing: border-box; /* Includes padding in the element's total width and height */
+}
+
+.new-status-check {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem; /* menor espaçamento, conforme loginRequest */
+  width: 100%;
+  max-width: 480px; /* mantive largura menor que 620 do loginRequest */
+  background: var(--bg-surface-1);
+  padding: 2.5rem; /* igual ao loginRequest */
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.new-titulo-status {
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem; /* Add some space below the title */
+}
+
+.user-info {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.user-info p {
+  margin: 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.user-info strong {
+  color: var(--primary-main);
+  font-weight: 600;
+}
+
+.new-select-local {
+  appearance: none;
+  background-color: var(--bg-surface-2);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.875rem 2.5rem 0.875rem 1rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem; /* Add space below the select */
+}
+
+.new-select-local:focus {
+  outline: none;
+  border-color: var(--primary-main);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.new-select-local:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.new-botao-access {
+  padding: 1rem 2rem;
+  font-size: 1.1rem; /* igual ao botao_submit */
+  font-weight: bold;
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  margin-top: 1rem; /* Add some space above the button */
+}
+
+.new-botao-access::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.new-botao-access:hover {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-main));
+}
+
+.new-botao-access:hover::before {
+  left: 100%;
+}
+
+.new-botao-access:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px hsla(14, 100%, 57%, 0.3);
+}
+
+.new-botao-access:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.new-success {
+  text-align: center;
+  color: #22c55e;
+  background-color: hsla(142, 76%, 36%, 0.1);
+  border: 1px solid #22c55e;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-weight: 500;
+  animation: slideInUp 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.new-error {
+  color: #ef4444;
+  background-color: hsla(0, 84%, 60%, 0.1);
+  border: 1px solid #ef4444;
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  animation: slideInUp 0.3s ease;
+}
+
+/* ===== HUB DETAILS STYLING ===== */
+.hub-details {
+  background: var(--bg-surface-2);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.hub-info h3 {
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary-main);
+  padding-bottom: 0.5rem;
+}
+
+.hub-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.info-item strong {
+  color: var(--primary-main);
+  font-weight: 600;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.info-item.description {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.5rem;
+}
+
+.info-item.description strong {
+  min-width: auto;
+}
+
+.info-item a {
+  color: var(--primary-main);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.info-item a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ===== NO HUBS MESSAGE ===== */
+.no-hubs-message {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--text-secondary);
+}
+
+.no-hubs-message p {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.no-hubs-message .new-botao-access {
+  background: linear-gradient(135deg, var(--text-secondary), var(--text-primary));
+  margin-top: 0;
+}
+
+.no-hubs-message .new-botao-access:hover {
+  background: linear-gradient(135deg, var(--primary-main), var(--primary-light));
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 640px) {
+  .new-container {
+    padding: 0.5rem;
+  }
+
+  .new-status-check {
+    padding: 1.5rem;
+    margin: 0.5rem;
+  }
+
+  .hub-details {
+    padding: 1rem;
+    margin: 0.75rem 0;
+  }
+
+  .hub-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .info-item {
+    font-size: 0.9rem;
+  }
+
+  .info-item strong {
+    min-width: 70px;
+  }
+}
+
+/* ==== Animações compartilhadas ==== */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

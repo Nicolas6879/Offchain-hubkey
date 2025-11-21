@@ -1,0 +1,17 @@
+{
+  "userId": "68d8670b234a7d6ec6ea4943",
+  "name": "LEandro",
+  "email": "leandro@email.com",
+  "walletAddress": "0.0.6102241",
+  "tokenId": "0.0.6244705",
+  "serialNumber": 14,
+  "imageUrl": "https://bafybeicoydwwjzuspqqpfdhablqkd2sovuc7rxiciioggoo4uhvvvth6a4.ipfs.w3s.link/ChatGPT%20Image%2028%20de%20jun.%20de%202025%2C%2011_43_46.png",
+  "timestamp": 1759012681437,
+  "compactMetadata": {
+    "u": "68d8670b",
+    "n": "LEandro",
+    "t": 1759012678
+  },
+  "originalMetadata": "0.0.6917126",
+  "transferTimestamp": 1759012857515
+}

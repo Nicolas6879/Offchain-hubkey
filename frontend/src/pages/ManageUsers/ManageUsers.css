@@ -1,0 +1,56 @@
+.user-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  
+  .user-card {
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .user-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-main);
+    background: none;
+    border: none;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .user-details {
+    margin-top: 0.75rem;
+    color: var(--text-primary);
+  }
+  
+  .pagination {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .page-btn {
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .page-btn.active {
+    background: var(--primary-main);
+    color: var(--primary-contrast);
+  }
+  

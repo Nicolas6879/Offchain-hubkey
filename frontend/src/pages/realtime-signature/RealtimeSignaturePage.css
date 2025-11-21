@@ -1,0 +1,67 @@
+.signatureContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 360px;
+    min-width: 360px;
+    background: white;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: inset gray 0px 0px 20px;
+    box-sizing: border-box;
+}
+
+.subtitle {
+    font-size: 22px;
+    color: black;
+    text-align: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.loading-dots {
+    display: inline-flex;
+    margin-left: 4px;
+  }
+  
+  .loading-dots span {
+    animation: bounce 0.6s infinite ease-in-out;
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  
+  .loading-dots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+  
+  .loading-dots span:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  .loading-dots span:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+  
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .botao_sign {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-items: center;
+}
+
+.botao_sign:hover {
+    background-color: #115293;}

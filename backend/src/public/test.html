@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offchain Membership - End-to-End Test</title>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+    .column {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+    .step {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    h2 {
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .logs {
+      background-color: #222;
+      color: #0f0;
+      font-family: monospace;
+      padding: 10px;
+      height: 300px;
+      overflow-y: auto;
+      border-radius: 4px;
+    }
+    .complete {
+      background-color: #dff0d8;
+      border-color: #d6e9c6;
+    }
+    .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    .status-pending {
+      background-color: #fcf8e3;
+      color: #8a6d3b;
+    }
+    .status-success {
+      background-color: #dff0d8;
+      color: #3c763d;
+    }
+    .status-error {
+      background-color: #f2dede;
+      color: #a94442;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Offchain Membership - End-to-End Test Interface</h1>
+  
+  <div class="container">
+    <div class="column">
+      <h2>User Flow</h2>
+      
+      <div class="step" id="step-connect">
+        <h3>Step 1: Wallet Connection</h3>
+        <p>Simulate connecting with a test wallet address</p>
+        <input type="text" id="userWalletAddress" placeholder="Enter test wallet address" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F">
+        <button onclick="simulateWalletConnect()">Connect Wallet</button>
+        <span id="connect-status"></span>
+      </div>
+      
+      <div class="step hidden" id="step-join-request">
+        <h3>Step 2: Submit Join Request</h3>
+        <input type="text" id="userName" placeholder="Full Name" value="John Doe">
+        <input type="email" id="userEmail" placeholder="Email" value="john@example.com">
+        <input type="tel" id="userPhone" placeholder="Phone" value="+123456789">
+        <button onclick="submitJoinRequest()">Submit Join Request</button>
+        <span id="join-request-status"></span>
+      </div>
+      
+      <div class="step hidden" id="step-check-status">
+        <h3>Step 3: Check Join Request Status</h3>
+        <button onclick="checkJoinRequestStatus()">Check Status</button>
+        <div id="status-result"></div>
+      </div>
+      
+      <div class="step hidden" id="step-hub-access">
+        <h3>Step 4: Request Hub Access</h3>
+        <div>
+          <label for="hubSelect">Select Hub:</label>
+          <select id="hubSelect">
+            <option value="6824be19d1798d5eb183bf35">Test Hub</option>
+            <option value="test-hub-123">Demo Hub</option>
+          </select>
+        </div>
+        <input type="text" id="tokenId" placeholder="NFT Token ID" value="NFT123456">
+        <input type="datetime-local" id="visitDate">
+        <button onclick="requestHubAccess()">Request Hub Access</button>
+        <span id="hub-access-status"></span>
+      </div>
+
+      <div class="step hidden" id="step-sign">
+        <h3>Step 5: Verify with Signature</h3>
+        <p>Message to sign:</p>
+        <textarea id="messageToSign" readonly rows="3"></textarea>
+        <p>This would normally happen via WalletConnect. For testing, we'll simulate it:</p>
+        <button onclick="simulateSignMessage()">Sign Message</button>
+        <div class="hidden" id="signature-div">
+          <p>Signature:</p>
+          <textarea id="signature" readonly rows="3"></textarea>
+          <button onclick="submitSignature()">Submit Signature</button>
+        </div>
+        <span id="sign-status"></span>
+      </div>
+    </div>
+    
+    <div class="column">
+      <h2>Admin/Hub Flow</h2>
+      
+      <div class="step" id="hub-step-view-all">
+        <h3>Admin Step 1: View All Join Requests</h3>
+        <button onclick="getAllJoinRequests()">Get All Join Requests</button>
+        <span id="get-all-status"></span>
+        <div id="all-requests-result" style="margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; display: none;"></div>
+      </div>
+      
+      <div class="step" id="hub-step-review">
+        <h3>Admin Step 2: Approve Join Request</h3>
+        <input type="text" id="requestIdToApprove" placeholder="Request ID">
+        <button onclick="approveJoinRequest()">Approve</button>
+        <button onclick="rejectJoinRequest()">Reject</button>
+        <span id="approval-status"></span>
+      </div>
+      
+      <div class="step" id="hub-step-nft">
+        <h3>Admin Step 3: Generate NFT</h3>
+        <button onclick="generatePfp()">Generate PFP</button>
+        <button onclick="mintNFT()">Mint NFT</button>
+        <div id="nft-result"></div>
+      </div>
+      
+      <div class="step" id="hub-step-signature">
+        <h3>Hub Step 4: Request Signature</h3>
+        <input type="text" id="accessRequestId" placeholder="Access Request ID">
+        <input type="text" id="hubId" placeholder="Hub ID" value="6824be19d1798d5eb183bf35">
+        <button onclick="requestSignature()">Request Signature</button>
+        <span id="request-sig-status"></span>
+      </div>
+      
+      <div class="step" id="hub-step-verify">
+        <h3>Hub Step 5: Verify & Log Access</h3>
+        <input type="text" id="accessIdToLog" placeholder="Access Request ID">
+        <input type="text" id="staffName" placeholder="Staff Name" value="Staff Member">
+        <textarea id="accessNotes" placeholder="Notes about the visit">Scheduled visit</textarea>
+        <button onclick="logHubAccess()">Log Access</button>
+        <span id="log-access-status"></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container" style="margin-top: 20px;">
+    <div class="column">
+      <h2>WebSocket Connection</h2>
+      <div>
+        <p>Status: <span id="socket-status">Disconnected</span></p>
+        <button onclick="connectSocket()">Connect Socket</button>
+        <button onclick="disconnectSocket()">Disconnect Socket</button>
+      </div>
+    </div>
+    
+    <div class="column">
+      <h2>Profile Management</h2>
+      <div>
+        <button onclick="getProfile()">Get Profile</button>
+        <div style="margin-top: 10px;">
+          <input type="text" id="updateName" placeholder="New Name">
+          <input type="email" id="updateEmail" placeholder="New Email">
+          <button onclick="updateProfile()">Update Profile</button>
+        </div>
+        <div id="profile-result"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div style="margin-top: 20px;">
+    <h2>Event Log</h2>
+    <div class="logs" id="log"></div>
+  </div>
+
+  <script>
+    // Global variables
+    let socket;
+    let connectedWallet = null;
+    let joinRequestId = null;
+    let hubAccessId = null;
+    let nftTokenId = null;
+    let jwtToken = null;
+    let currentMessage = null;
+    
+    // Initialize date picker for visit date to tomorrow
+    function initDatePicker() {
+      try {
+        const visitDateInput = document.getElementById('visitDate');
+        // Set default value as ISO string for compatibility
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        // Format as YYYY-MM-DDThh:mm
+        const formattedDate = tomorrow.toISOString().substring(0, 16);
+        visitDateInput.value = formattedDate;
+      } catch (error) {
+        logEvent(`Warning: Could not set default date: ${error.message}`);
+      }
+    }
+    
+    // API helper function
+    async function callApi(endpoint, method = 'GET', data = null, withAuth = false) {
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (withAuth && jwtToken) {
+        headers['Authorization'] = `Bearer ${jwtToken}`;
+      }
+      
+      const options = {
+        method,
+        headers
+      };
+      
+      if (data && (method === 'POST' || method === 'PUT')) {
+        options.body = JSON.stringify(data);
+      }
+      
+      try {
+        const response = await fetch(`/api/${endpoint}`, options);
+        return await response.json();
+      } catch (error) {
+        logEvent(`API Error: ${error.message}`);
+        throw error;
+      }
+    }
+    
+    // Socket connection
+    function connectSocket() {
+      if (socket) {
+        logEvent('Socket already connected');
+        return;
+      }
+      
+      try {
+        socket = io();
+        
+        socket.on('connect', () => {
+          document.getElementById('socket-status').textContent = 'Connected';
+          document.getElementById('socket-status').className = 'status status-success';
+          logEvent('WebSocket connected');
+          
+          // If wallet is already connected, register it
+          if (connectedWallet) {
+            registerWalletWithSocket();
+          }
+        });
+        
+        socket.on('disconnect', () => {
+          document.getElementById('socket-status').textContent = 'Disconnected';
+          document.getElementById('socket-status').className = 'status status-error';
+          logEvent('WebSocket disconnected');
+        });
+        
+        socket.on('registered', (data) => {
+          logEvent(`Wallet registered with socket: ${JSON.stringify(data)}`);
+        });
+        
+        socket.on('signature_needed', (data) => {
+          logEvent(`Signature needed: ${JSON.stringify(data)}`);
+          document.getElementById('messageToSign').value = data.message;
+          currentMessage = data.message;
+          document.getElementById('step-sign').classList.remove('hidden');
+        });
+        
+        socket.on('signature_confirmed', (data) => {
+          logEvent(`Signature confirmed: ${JSON.stringify(data)}`);
+          document.getElementById('sign-status').textContent = 'Verified';
+          document.getElementById('sign-status').className = 'status status-success';
+        });
+        
+        socket.on('signature_verified', (data) => {
+          logEvent(`Hub received verification: ${JSON.stringify(data)}`);
+        });
+        
+        socket.on('error', (data) => {
+          logEvent(`Socket error: ${JSON.stringify(data)}`);
+        });
+        
+      } catch (error) {
+        logEvent(`Error connecting to socket: ${error.message}`);
+      }
+    }
+    
+    function disconnectSocket() {
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+        document.getElementById('socket-status').textContent = 'Disconnected';
+        document.getElementById('socket-status').className = 'status status-error';
+      }
+    }
+    
+    function registerWalletWithSocket() {
+      if (!socket || !connectedWallet) {
+        logEvent('Cannot register wallet: Socket or wallet not connected');
+        return;
+      }
+      
+      socket.emit('register', { walletAddress: connectedWallet });
+      logEvent(`Registered wallet with socket: ${connectedWallet}`);
+    }
+    
+    // User flow functions
+    function simulateWalletConnect() {
+      const walletAddress = document.getElementById('userWalletAddress').value.trim();
+      
+      if (!walletAddress) {
+        logEvent('Error: Wallet address is required');
+        return;
+      }
+      
+      connectedWallet = walletAddress;
+      document.getElementById('connect-status').textContent = 'Connected';
+      document.getElementById('connect-status').className = 'status status-success';
+      document.getElementById('step-join-request').classList.remove('hidden');
+      
+      logEvent(`Wallet connected: ${walletAddress}`);
+      
+      // If socket is already connected, register the wallet
+      if (socket) {
+        registerWalletWithSocket();
+      }
+    }
+    
+    async function submitJoinRequest() {
+      if (!connectedWallet) {
+        logEvent('Error: Wallet not connected');
+        return;
+      }
+      
+      const name = document.getElementById('userName').value.trim();
+      const email = document.getElementById('userEmail').value.trim();
+      const phone = document.getElementById('userPhone').value.trim();
+      
+      try {
+        const data = {
+          fullName: name,
+          email: email,
+          walletAddress: connectedWallet,
+          phone: phone
+        };
+        
+        logEvent(`Submitting join request: ${JSON.stringify(data)}`);
+        
+        const response = await callApi('join-request', 'POST', data);
+        
+        if (response.success) {
+          joinRequestId = response.requestId || (response.data && response.data.id);
+          
+          if (joinRequestId) {
+            document.getElementById('join-request-status').textContent = 'Submitted';
+            document.getElementById('join-request-status').className = 'status status-success';
+            document.getElementById('step-check-status').classList.remove('hidden');
+            document.getElementById('requestIdToApprove').value = joinRequestId;
+            
+            logEvent(`Join request submitted successfully. ID: ${joinRequestId}`);
+          } else {
+            document.getElementById('join-request-status').textContent = 'Warning';
+            document.getElementById('join-request-status').className = 'status status-pending';
+            logEvent(`Request submitted but no ID was returned. Response: ${JSON.stringify(response)}`);
+          }
+        } else {
+          document.getElementById('join-request-status').textContent = 'Failed';
+          document.getElementById('join-request-status').className = 'status status-error';
+          logEvent(`Join request failed: ${response.message}`);
+        }
+      } catch (error) {
+        document.getElementById('join-request-status').textContent = 'Failed';
+        document.getElementById('join-request-status').className = 'status status-error';
+        logEvent(`Error submitting join request: ${error.message}`);
+      }
+    }
+    
+    async function checkJoinRequestStatus() {
+      if (!connectedWallet) {
+        logEvent('Error: Wallet not connected');
+        return;
+      }
+      
+      try {
+        const response = await callApi(`join-request/status/${connectedWallet}`);
+        
+        if (response.success) {
+          // Extract the request data from the response
+          const requestData = response.data || response.request || response;
+          const status = requestData.status || 'unknown';
+          const createdAt = requestData.createdAt || new Date().toISOString();
+          
+          const statusDiv = document.getElementById('status-result');
+          statusDiv.innerHTML = `
+            <p><strong>Status:</strong> ${status}</p>
+            <p><strong>Submitted:</strong> ${new Date(createdAt).toLocaleString()}</p>
+          `;
+          
+          logEvent(`Join request status: ${status}`);
+          
+          // If approved, show hub access step
+          if (status === 'approved') {
+            document.getElementById('step-hub-access').classList.remove('hidden');
+          }
+        } else {
+          logEvent(`Error checking status: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error checking join request status: ${error.message}`);
+      }
+    }
+    
+    async function requestHubAccess() {
+      if (!connectedWallet) {
+        logEvent('Error: Wallet not connected');
+        return;
+      }
+      
+      const hubId = document.getElementById('hubSelect').value;
+      const tokenId = document.getElementById('tokenId').value;
+      const visitDate = document.getElementById('visitDate').value;
+      const userName = document.getElementById('userName').value;
+      const userEmail = document.getElementById('userEmail').value;
+      
+      try {
+        const data = {
+          hubId: hubId,
+          name: userName,
+          email: userEmail,
+          walletAddress: connectedWallet,
+          tokenId: tokenId,
+          visitDate: new Date(visitDate).toISOString()
+        };
+        
+        logEvent(`Requesting hub access: ${JSON.stringify(data)}`);
+        
+        const response = await callApi('hub-access/request', 'POST', data);
+        
+        if (response.success) {
+          // Extract the ID from the response, accommodating different response formats
+          hubAccessId = response.accessRequestId || response.requestId || 
+                        (response.data && (response.data.id || response.data._id));
+          
+          if (hubAccessId) {
+            document.getElementById('hub-access-status').textContent = 'Requested';
+            document.getElementById('hub-access-status').className = 'status status-success';
+            document.getElementById('accessRequestId').value = hubAccessId;
+            document.getElementById('accessIdToLog').value = hubAccessId;
+            
+            logEvent(`Hub access requested successfully. ID: ${hubAccessId}`);
+          } else {
+            document.getElementById('hub-access-status').textContent = 'Warning';
+            document.getElementById('hub-access-status').className = 'status status-pending';
+            logEvent(`Hub access submitted but no ID was returned. Response: ${JSON.stringify(response)}`);
+          }
+        } else {
+          document.getElementById('hub-access-status').textContent = 'Failed';
+          document.getElementById('hub-access-status').className = 'status status-error';
+          logEvent(`Hub access request failed: ${response.message}`);
+        }
+      } catch (error) {
+        document.getElementById('hub-access-status').textContent = 'Failed';
+        document.getElementById('hub-access-status').className = 'status status-error';
+        logEvent(`Error requesting hub access: ${error.message}`);
+      }
+    }
+    
+    async function simulateSignMessage() {
+      const message = document.getElementById('messageToSign').value;
+      
+      if (!message) {
+        logEvent('Error: No message to sign');
+        return;
+      }
+      
+      try {
+        // For testing, we'll use a known private key to sign
+        // DO NOT USE THIS IN PRODUCTION
+        const wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
+        
+        // Update displayed wallet to match the test wallet we're using for signing
+        document.getElementById('userWalletAddress').value = wallet.address;
+        connectedWallet = wallet.address;
+        
+        const signature = await wallet.signMessage(message);
+        document.getElementById('signature').value = signature;
+        document.getElementById('signature-div').classList.remove('hidden');
+        
+        logEvent(`Message signed: ${signature}`);
+      } catch (error) {
+        logEvent(`Error signing message: ${error.message}`);
+      }
+    }
+    
+    function submitSignature() {
+      if (!socket) {
+        logEvent('Error: Socket not connected');
+        return;
+      }
+      
+      const signature = document.getElementById('signature').value;
+      const message = document.getElementById('messageToSign').value;
+      
+      if (!hubAccessId) {
+        logEvent('Error: No hub access request ID');
+        return;
+      }
+      
+      socket.emit('submit_signature', {
+        requestId: hubAccessId,
+        signature: signature,
+        message: message
+      });
+      
+      logEvent(`Submitted signature for request ${hubAccessId}`);
+    }
+    
+    // Admin functions
+    async function getAllJoinRequests() {
+      try {
+        document.getElementById('get-all-status').textContent = 'Loading...';
+        document.getElementById('get-all-status').className = 'status status-pending';
+        
+        const response = await callApi('join-request', 'GET');
+        
+        if (response.success) {
+          const requests = response.joinRequests || response.data || [];
+          const resultDiv = document.getElementById('all-requests-result');
+          
+          if (requests.length === 0) {
+            resultDiv.innerHTML = '<p><em>No join requests found</em></p>';
+          } else {
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<tr style="background-color: #f5f5f5; font-weight: bold;">';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">ID</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Name</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Email</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Wallet</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Status</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Date</th>';
+            html += '<th style="padding: 5px; border: 1px solid #ddd;">Actions</th>';
+            html += '</tr>';
+            
+            requests.forEach(request => {
+              const id = request._id || request.id;
+              const statusClass = request.status === 'approved' ? 'status-success' : 
+                                request.status === 'rejected' ? 'status-error' : 'status-pending';
+              
+              html += '<tr>';
+              html += `<td style="padding: 5px; border: 1px solid #ddd; font-family: monospace; font-size: 10px;">${id || 'N/A'}</td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd;">${request.fullName || 'N/A'}</td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd;">${request.email || 'N/A'}</td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd; font-family: monospace; font-size: 10px;">${request.walletAddress || 'N/A'}</td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd;"><span class="status ${statusClass}">${request.status || 'pending'}</span></td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd;">${request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}</td>`;
+              html += `<td style="padding: 5px; border: 1px solid #ddd;">`;
+              if (request.status === 'pending') {
+                html += `<button onclick="setRequestIdAndApprove('${id}')" style="margin: 1px; padding: 2px 6px; font-size: 11px;">Approve</button>`;
+                html += `<button onclick="setRequestIdAndReject('${id}')" style="margin: 1px; padding: 2px 6px; font-size: 11px; background-color: #d9534f;">Reject</button>`;
+              } else {
+                html += '<em>No actions</em>';
+              }
+              html += `</td>`;
+              html += '</tr>';
+            });
+            
+            html += '</table>';
+            resultDiv.innerHTML = html;
+          }
+          
+          resultDiv.style.display = 'block';
+          document.getElementById('get-all-status').textContent = `Found ${requests.length} requests`;
+          document.getElementById('get-all-status').className = 'status status-success';
+          
+          logEvent(`Retrieved ${requests.length} join requests`);
+        } else {
+          document.getElementById('get-all-status').textContent = 'Failed';
+          document.getElementById('get-all-status').className = 'status status-error';
+          logEvent(`Failed to get join requests: ${response.message}`);
+        }
+      } catch (error) {
+        document.getElementById('get-all-status').textContent = 'Failed';
+        document.getElementById('get-all-status').className = 'status status-error';
+        logEvent(`Error getting join requests: ${error.message}`);
+      }
+    }
+    
+    function setRequestIdAndApprove(requestId) {
+      document.getElementById('requestIdToApprove').value = requestId;
+      approveJoinRequest();
+    }
+    
+    function setRequestIdAndReject(requestId) {
+      document.getElementById('requestIdToApprove').value = requestId;
+      rejectJoinRequest();
+    }
+    
+    async function approveJoinRequest() {
+      const requestId = document.getElementById('requestIdToApprove').value;
+      
+      if (!requestId) {
+        logEvent('Error: Request ID is required');
+        return;
+      }
+      
+      try {
+        // In a real app, this would require admin token
+        const response = await callApi(`join-request/${requestId}/approve`, 'POST');
+        
+        if (response.success) {
+          document.getElementById('approval-status').textContent = 'Approved';
+          document.getElementById('approval-status').className = 'status status-success';
+          logEvent(`Join request approved: ${requestId}`);
+        } else {
+          document.getElementById('approval-status').textContent = 'Failed';
+          document.getElementById('approval-status').className = 'status status-error';
+          logEvent(`Approval failed: ${response.message}`);
+        }
+      } catch (error) {
+        document.getElementById('approval-status').textContent = 'Failed';
+        document.getElementById('approval-status').className = 'status status-error';
+        logEvent(`Error approving join request: ${error.message}`);
+      }
+    }
+    
+    async function rejectJoinRequest() {
+      const requestId = document.getElementById('requestIdToApprove').value;
+      
+      if (!requestId) {
+        logEvent('Error: Request ID is required');
+        return;
+      }
+      
+      try {
+        // In a real app, this would require admin token
+        const response = await callApi(`join-request/${requestId}/reject`, 'POST', { reason: 'Testing rejection' });
+        
+        if (response.success) {
+          document.getElementById('approval-status').textContent = 'Rejected';
+          document.getElementById('approval-status').className = 'status status-error';
+          logEvent(`Join request rejected: ${requestId}`);
+        } else {
+          logEvent(`Rejection failed: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error rejecting join request: ${error.message}`);
+      }
+    }
+    
+    async function generatePfp() {
+      const name = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      
+      try {
+        // In a real app, this would require authentication
+        const response = await callApi('nft/generate-pfp', 'POST', {
+          name: name,
+          email: email
+        });
+        
+        if (response.success) {
+          const nftResult = document.getElementById('nft-result');
+          nftResult.innerHTML = `
+            <p>PFP Generated: ${response.data.imagePath}</p>
+            <img src="/api/images/${response.data.filename}" width="100" height="100">
+          `;
+          logEvent(`PFP generated: ${response.data.filename}`);
+        } else {
+          logEvent(`PFP generation failed: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error generating PFP: ${error.message}`);
+      }
+    }
+    
+    async function mintNFT() {
+      const name = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      
+      try {
+        // In a real app, this would require admin token
+        const response = await callApi('nft/mint', 'POST', {
+          name: name,
+          email: email
+        });
+        
+        if (response.success) {
+          nftTokenId = response.data.tokenId;
+          document.getElementById('tokenId').value = nftTokenId;
+          
+          const nftResult = document.getElementById('nft-result');
+          nftResult.innerHTML += `
+            <p><strong>NFT Minted:</strong> Token ID: ${nftTokenId}</p>
+          `;
+          logEvent(`NFT minted with token ID: ${nftTokenId}`);
+        } else {
+          logEvent(`NFT minting failed: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error minting NFT: ${error.message}`);
+      }
+    }
+    
+    function requestSignature() {
+      if (!socket) {
+        logEvent('Error: Socket not connected');
+        return;
+      }
+      
+      const accessRequestId = document.getElementById('accessRequestId').value;
+      const hubId = document.getElementById('hubId').value;
+      
+      if (!accessRequestId || !hubId) {
+        logEvent('Error: Access Request ID and Hub ID are required');
+        return;
+      }
+      
+      const message = `Verify access to hub ${hubId} at ${new Date().toISOString()}`;
+      
+      socket.emit('request_signature', {
+        accessRequestId: accessRequestId,
+        message: message,
+        hubId: hubId
+      });
+      
+      document.getElementById('request-sig-status').textContent = 'Requested';
+      document.getElementById('request-sig-status').className = 'status status-success';
+      logEvent(`Signature requested for access ${accessRequestId}`);
+    }
+    
+    async function logHubAccess() {
+      const accessId = document.getElementById('accessIdToLog').value;
+      const staffName = document.getElementById('staffName').value;
+      const notes = document.getElementById('accessNotes').value;
+      
+      if (!accessId) {
+        logEvent('Error: Access Request ID is required');
+        return;
+      }
+      
+      try {
+        // In a real app, this would require hub staff token
+        const response = await callApi(`hub-access/${accessId}/log`, 'POST', {
+          staffName: staffName,
+          notes: notes
+        });
+        
+        if (response.success) {
+          document.getElementById('log-access-status').textContent = 'Logged';
+          document.getElementById('log-access-status').className = 'status status-success';
+          logEvent(`Hub access logged: ${accessId}`);
+        } else {
+          document.getElementById('log-access-status').textContent = 'Failed';
+          document.getElementById('log-access-status').className = 'status status-error';
+          logEvent(`Hub access logging failed: ${response.message}`);
+        }
+      } catch (error) {
+        document.getElementById('log-access-status').textContent = 'Failed';
+        document.getElementById('log-access-status').className = 'status status-error';
+        logEvent(`Error logging hub access: ${error.message}`);
+      }
+    }
+    
+    // Profile management
+    async function getProfile() {
+      try {
+        // In a real app, this would require authentication
+        const response = await callApi('profile', 'GET', null, true);
+        
+        if (response.success) {
+          const profileResult = document.getElementById('profile-result');
+          profileResult.innerHTML = `
+            <p><strong>Name:</strong> ${response.data.name || 'Not set'}</p>
+            <p><strong>Email:</strong> ${response.data.email}</p>
+            <p><strong>Wallet:</strong> ${response.data.walletAddress}</p>
+            <p><strong>NFT Count:</strong> ${response.data.nftCount}</p>
+          `;
+          document.getElementById('updateName').value = response.data.name || '';
+          document.getElementById('updateEmail').value = response.data.email || '';
+          
+          logEvent(`Profile retrieved: ${response.data.name}`);
+        } else {
+          logEvent(`Profile retrieval failed: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error getting profile: ${error.message}`);
+      }
+    }
+    
+    async function updateProfile() {
+      const name = document.getElementById('updateName').value;
+      const email = document.getElementById('updateEmail').value;
+      
+      try {
+        // In a real app, this would require authentication
+        const response = await callApi('profile', 'PUT', {
+          name: name,
+          email: email
+        }, true);
+        
+        if (response.success) {
+          const profileResult = document.getElementById('profile-result');
+          profileResult.innerHTML = `
+            <p><strong>Profile Updated!</strong></p>
+            <p><strong>Name:</strong> ${response.data.name || 'Not set'}</p>
+            <p><strong>Email:</strong> ${response.data.email}</p>
+          `;
+          logEvent(`Profile updated: ${name}`);
+        } else {
+          logEvent(`Profile update failed: ${response.message}`);
+        }
+      } catch (error) {
+        logEvent(`Error updating profile: ${error.message}`);
+      }
+    }
+    
+    // Utility functions
+    function logEvent(message) {
+      const logDiv = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    // Initialize
+    window.onload = () => {
+      connectSocket();
+      initDatePicker();
+      logEvent('Test interface loaded');
+    };
+  </script>
+</body>
+</html> 

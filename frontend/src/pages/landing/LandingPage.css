@@ -1,0 +1,247 @@
+.landing-page {
+  background: var(--bg-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.theme-transition {
+  transition: all 0.3s ease;
+}
+
+.text-primary {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    hsla(14, 100%, 57%, 0.1) 0%, 
+    hsla(14, 100%, 57%, 0.05) 50%, 
+    transparent 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Hero section animations */
+.landing-page .MuiContainer-root:first-child {
+  position: relative;
+}
+
+.landing-page .MuiContainer-root:first-child::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, 
+    hsla(14, 100%, 57%, 0.03) 0%, 
+    transparent 70%);
+  animation: pulse 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.1;
+  }
+}
+
+/* Feature cards hover effects */
+.landing-page .MuiCard-root {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-page .MuiCard-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    hsla(14, 100%, 57%, 0.1), 
+    transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.landing-page .MuiCard-root:hover::before {
+  left: 100%;
+}
+
+/* Button animations */
+.landing-page .MuiButton-root {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.landing-page .MuiButton-root::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+}
+
+.landing-page .MuiButton-root:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .glass {
+    height: 300px !important;
+  }
+  
+  .landing-page .MuiTypography-h1 {
+    font-size: 2.5rem !important;
+  }
+  
+  .landing-page .MuiTypography-h2 {
+    font-size: 2rem !important;
+  }
+  
+  .landing-page .MuiTypography-h3 {
+    font-size: 1.8rem !important;
+  }
+  
+  .landing-page .MuiTypography-h4 {
+    font-size: 1.5rem !important;
+  }
+
+  /* Full width on mobile */
+  .landing-page > .MuiBox-root {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+/* Logo responsive adjustments */
+.landing-page img[alt="Offchain Brazil Logo"] {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  transition: filter 0.3s ease;
+}
+
+.landing-page img[alt="Offchain Brazil Logo"]:hover {
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+}
+
+/* Event image styling */
+.landing-page img[alt="Offchain Brazil Event"] {
+  transition: transform 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.landing-page img[alt="Offchain Brazil Event"]:hover {
+  transform: scale(1.02);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+/* Hero section enhanced styling */
+.landing-page .MuiContainer-root:first-child .glass {
+  position: relative;
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsla(14, 100%, 57%, 0.2);
+  }
+  to {
+    box-shadow: 0 0 40px hsla(14, 100%, 57%, 0.4);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface-1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-main);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Section spacing adjustments */
+.landing-page .MuiDivider-root {
+  margin: 0;
+  opacity: 0.5;
+}
+
+/* Primary color card special styling */
+.landing-page .MuiCard-root[style*="--primary-main"] {
+  background: linear-gradient(135deg, 
+    var(--primary-main) 0%, 
+    hsl(14, 100%, 45%) 100%) !important;
+  box-shadow: 0 8px 32px hsla(14, 100%, 57%, 0.3);
+}
+
+/* Loading animation for images */
+.landing-page img {
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Text selection styling */
+::selection {
+  background: var(--primary-main);
+  color: var(--primary-contrast);
+} 
