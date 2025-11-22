@@ -4,12 +4,16 @@
  */
 
 import express from 'express';
+import authRoutes from './authRoutes';
 import joinRequestRoutes from './joinRequestRoutes';
+import userRoutes from './userRoutes';
 import nftRoutes from './nftRoutes';
 import hubAccessRoutes from './hubAccessRoutes';
 import membershipRoutes from './membershipRoutes';
 import profileRoutes from './profileRoutes';
 import verificationRoutes from './verificationRoutes';
+import eventRoutes from './eventRoutes';
+import productRoutes from './productRoutes';
 import { authenticate } from '../middlewares/auth';
 import path from 'path';
 
@@ -41,10 +45,22 @@ router.get('/images/:filename', (req, res) => {
 // Mount routes from feature modules
 
 /**
+ * Authentication routes for signup and login
+ * @see ./authRoutes.ts
+ */
+router.use('/auth', authRoutes);
+
+/**
  * Join request routes for membership applications
  * @see ./joinRequestRoutes.ts
  */
 router.use('/join-request', joinRequestRoutes);
+
+/**
+ * User management routes
+ * @see ./userRoutes.ts
+ */
+router.use('/users', userRoutes);
 
 /**
  * NFT management routes
@@ -59,6 +75,12 @@ router.use('/nft', nftRoutes);
 router.use('/hub-access', hubAccessRoutes);
 
 /**
+ * Event management routes
+ * @see ./eventRoutes.ts
+ */
+router.use('/events', eventRoutes);
+
+/**
  * Membership management routes
  * @see ./membershipRoutes.ts
  */
@@ -69,6 +91,12 @@ router.use('/membership', membershipRoutes);
  * @see ./profileRoutes.ts
  */
 router.use('/profile', profileRoutes);
+
+/**
+ * Product and marketplace routes
+ * @see ./productRoutes.ts
+ */
+router.use('/', productRoutes);
 
 /**
  * Verification routes for signature requests

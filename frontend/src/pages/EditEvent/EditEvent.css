@@ -1,0 +1,86 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-main);
+    padding: 40px 20px;
+  }
+  
+  .edit-event-box {
+    background-color: var(--bg-surface-1);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    padding: 40px;
+    width: 100%;
+    max-width: 520px;
+    color: var(--text-primary);
+    transition: transform 0.3s ease;
+  }
+  
+  .edit-event-box:hover {
+    transform: translateY(-3px);
+  }
+  
+  .edit-event-box h1 {
+    font-size: 1.8rem;
+    color: var(--primary-main);
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  
+  .edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  
+  .edit-form label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+  
+  .edit-form input,
+  .edit-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #ccc);
+    background-color: var(--bg-surface-2, #f5f5f5);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .edit-form input:focus,
+  .edit-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-main);
+    box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.2);
+  }
+  
+  .edit-form textarea {
+    resize: none;
+    min-height: 100px;
+  }
+  
+  .botao_submit {
+    background-color: var(--primary-main);
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.1s ease;
+  }
+  
+  .botao_submit:hover {
+    background-color: var(--primary-dark, #e66a00);
+  }
+  
+  .botao_submit:active {
+    transform: scale(0.97);
+  }

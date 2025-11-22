@@ -30,10 +30,12 @@ app.use(
         scriptSrc: ["'self'", "'unsafe-inline'", "cdn.socket.io", "cdn.ethers.io", "unpkg.com"],
         scriptSrcAttr: ["'unsafe-inline'"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "http://localhost:3333", "http://localhost:4000", "http://localhost:3000", "https://*"],
         styleSrc: ["'self'", "'unsafe-inline'"]
       }
-    }
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false
   })
 );
 app.use(cors({
@@ -42,10 +44,26 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'wallet-address']
 }));
-app.use(express.json());
+// Increase payload limit to 10MB for photo uploads (base64 encoded images)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Serve static files from the generated folder
-app.use('/static', express.static(path.join(__dirname, '../generated')));
+// Serve static files from the generated folder with CORS headers
+app.use('/static', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', config.corsOrigin);
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Range');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  
+  next();
+}, express.static(path.join(__dirname, '../generated')));
 
 // Serve public files (for testing interface)
 app.use(express.static(path.join(__dirname, 'public')));

@@ -1,5 +1,7 @@
 import { ContractId, AccountId, TokenId } from "@hashgraph/sdk";
-import { ethers } from "ethers";
+import { Contract } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
+import { Web3Provider } from "@ethersproject/providers";
 import { useContext, useEffect } from "react";
 import { appConfig } from "../../../config";
 import { MetamaskContext } from "../../../contexts/MetamaskContext";
@@ -19,7 +21,7 @@ export const switchToHederaNetwork = async (ethereum: any) => {
   try {
     await ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: currentNetworkConfig.chainId }] // chainId must be in hexadecimal numbers
+      params: [{ chainId: currentNetworkConfig.chainId }]
     });
   } catch (error: any) {
     if (error.code === 4902) {
@@ -51,16 +53,11 @@ const getProvider = () => {
   if (!window.ethereum) {
     throw new Error("Metamask is not installed! Go install the extension!");
   }
-
-  return new ethers.providers.Web3Provider(window.ethereum);
+  return new Web3Provider(window.ethereum);
 }
 
-// returns a list of accounts
-// otherwise empty array
 export const connectToMetamask = async () => {
   const provider = getProvider();
-
-  // keep track of accounts returned
   let accounts: string[] = []
 
   try {
@@ -68,7 +65,6 @@ export const connectToMetamask = async () => {
     accounts = await provider.send("eth_requestAccounts", []);
   } catch (error: any) {
     if (error.code === 4001) {
-      // EIP-1193 userRejectedRequest error
       console.warn("Please connect to Metamask.");
     } else {
       console.error(error);
@@ -87,22 +83,18 @@ class MetaMaskWallet implements WalletInterface {
     return `0x${accountIdString}`;
   }
 
-  // Purpose: Transfer HBAR
-  // Returns: Promise<string>
-  // Note: Use JSON RPC Relay to search by transaction hash
   async transferHBAR(toAddress: AccountId, amount: number) {
     const provider = getProvider();
     const signer = await provider.getSigner();
-    // build the transaction
+
     const tx = await signer.populateTransaction({
       to: this.convertAccountIdToSolidityAddress(toAddress),
-      value: ethers.utils.parseEther(amount.toString()),
+      value: parseUnits(amount.toString(), 18),
     });
+
     try {
-      // send the transaction
       const { hash } = await signer.sendTransaction(tx);
       await provider.waitForTransaction(hash);
-
       return hash;
     } catch (error: any) {
       console.warn(error.message ? error.message : error);
@@ -138,21 +130,9 @@ class MetaMaskWallet implements WalletInterface {
       ContractId.fromString(tokenId.toString()),
       'transferFrom',
       new ContractFunctionParameterBuilder()
-        .addParam({
-          type: "address",
-          name: "from",
-          value: addresses[0]
-        })
-        .addParam({
-          type: "address",
-          name: "to",
-          value: this.convertAccountIdToSolidityAddress(toAddress)
-        })
-        .addParam({
-          type: "uint256",
-          name: "nftId",
-          value: serialNumber
-        }),
+        .addParam({ type: "address", name: "from", value: addresses[0] })
+        .addParam({ type: "address", name: "to", value: this.convertAccountIdToSolidityAddress(toAddress) })
+        .addParam({ type: "uint256", name: "nftId", value: serialNumber }),
       appConfig.constants.METAMASK_GAS_LIMIT_TRANSFER_NFT
     );
 
@@ -168,83 +148,35 @@ class MetaMaskWallet implements WalletInterface {
     );
   }
 
-  // Purpose: Sign a text message using MetaMask
-  // Returns: Promise<string | null> - The signature or null if failed
   async signMessage(message: string): Promise<string | null> {
     try {
-      console.log('MetaMask: Attempting to sign message:', message);
-      
-      if (!window.ethereum) {
-        console.error('MetaMask: Ethereum provider not found');
-        throw new Error('MetaMask não está instalado ou não está disponível');
-      }
-
+      if (!window.ethereum) throw new Error('MetaMask não está instalado ou não está disponível');
       const provider = getProvider();
-      console.log('MetaMask: Provider obtained successfully');
-      
       const signer = await provider.getSigner();
-      console.log('MetaMask: Signer obtained successfully');
-      
-      // Check if wallet is connected
       const accounts = await provider.listAccounts();
-      if (accounts.length === 0) {
-        console.error('MetaMask: No accounts connected');
-        throw new Error('Nenhuma conta conectada no MetaMask');
-      }
-      
-      console.log('MetaMask: Connected account:', accounts[0]);
-      console.log('MetaMask: About to request signature...');
-      
+      if (accounts.length === 0) throw new Error('Nenhuma conta conectada no MetaMask');
+
       const signature = await signer.signMessage(message);
-      console.log('MetaMask: Signature obtained successfully:', signature?.substring(0, 10) + '...');
-      
-      if (!signature) {
-        throw new Error('Assinatura retornada é vazia');
-      }
-      
+      if (!signature) throw new Error('Assinatura retornada é vazia');
       return signature;
     } catch (error: any) {
-      console.error('MetaMask signMessage error:', error);
-      
-      // Handle specific MetaMask errors
-      if (error.code === 4001) {
-        throw new Error('Assinatura rejeitada pelo usuário');
-      } else if (error.code === -32002) {
-        throw new Error('Solicitação pendente no MetaMask. Verifique sua carteira.');
-      } else if (error.code === -32603) {
-        throw new Error('Erro interno do MetaMask');
-      } else if (error.message?.includes('User denied')) {
-        throw new Error('Assinatura rejeitada pelo usuário');
-      } else if (error.message?.includes('not connected')) {
-        throw new Error('MetaMask não está conectado');
-      } else if (error.message?.includes('network')) {
-        throw new Error('Erro de rede. Verifique sua conexão.');
-      } else {
-        // Re-throw with original message if it's already user-friendly, otherwise use generic message
-        const userMessage = error.message || 'Erro desconhecido ao assinar mensagem';
-        throw new Error(userMessage);
-      }
+      if (error.code === 4001) throw new Error('Assinatura rejeitada pelo usuário');
+      else if (error.code === -32002) throw new Error('Solicitação pendente no MetaMask. Verifique sua carteira.');
+      else if (error.code === -32603) throw new Error('Erro interno do MetaMask');
+      else throw new Error(error.message || 'Erro desconhecido ao assinar mensagem');
     }
   }
 
-  // Purpose: build contract execute transaction and send to hashconnect for signing and execution
-  // Returns: Promise<TransactionId | null>
   async executeContractFunction(contractId: ContractId, functionName: string, functionParameters: ContractFunctionParameterBuilder, gasLimit: number) {
     const provider = getProvider();
     const signer = await provider.getSigner();
-    const abi = [
-      `function ${functionName}(${functionParameters.buildAbiFunctionParams()})`
-    ];
+    const abi = [`function ${functionName}(${functionParameters.buildAbiFunctionParams()})`];
 
-    // create contract instance for the contract id
-    // to call the function, use contract[functionName](...functionParameters, ethersOverrides)
-    const contract = new ethers.Contract(`0x${contractId.toSolidityAddress()}`, abi, signer);
+    const contract = new Contract(`0x${contractId.toSolidityAddress()}`, abi, signer);
     try {
       const txResult = await contract[functionName](
         ...functionParameters.buildEthersParams(),
-        {
-          gasLimit: gasLimit === -1 ? undefined : gasLimit
-        }
+        { gasLimit: gasLimit === -1 ? undefined : gasLimit }
       );
       return txResult.hash;
     } catch (error: any) {
@@ -254,45 +186,35 @@ class MetaMaskWallet implements WalletInterface {
   }
 
   disconnect() {
-    alert("Please disconnect using the Metamask extension.")
+    alert("Please disconnect using the Metamask extension.");
   }
-};
+}
 
 export const metamaskWallet = new MetaMaskWallet();
 
 export const MetaMaskClient = () => {
-  const { setMetamaskAccountAddress } = useContext(MetamaskContext);
+  const { setMetamaskAccountAddress, setWalletInterface } = useContext(MetamaskContext);
 
   useEffect(() => {
-    // set the account address if already connected
     try {
       const provider = getProvider();
-      provider.listAccounts().then((signers) => {
-        if (signers.length !== 0) {
-          setMetamaskAccountAddress(signers[0]);
-        } else {
-          setMetamaskAccountAddress("");
-        }
+      provider.listAccounts().then((signers: string[]) => {
+        const address = signers[0] || "";
+        setMetamaskAccountAddress(address);
+        setWalletInterface(address ? metamaskWallet : null);
       });
 
-      // listen for account changes and update the account address
       window.ethereum.on("accountsChanged", (accounts: string[]) => {
-        if (accounts.length !== 0) {
-          setMetamaskAccountAddress(accounts[0]);
-        } else {
-          setMetamaskAccountAddress("");
-        }
+        const address = accounts[0] || "";
+        setMetamaskAccountAddress(address);
+        setWalletInterface(address ? metamaskWallet : null);
       });
 
-      // cleanup by removing listeners
-      return () => {
-        window.ethereum.removeAllListeners("accountsChanged");
-      }
+      return () => window.ethereum.removeAllListeners("accountsChanged");
     } catch (error: any) {
-      console.error(error.message ? error.message : error);
+      console.error(error.message || error);
     }
-  }, [setMetamaskAccountAddress]);
+  }, [setMetamaskAccountAddress, setWalletInterface]);
 
   return null;
 }
-

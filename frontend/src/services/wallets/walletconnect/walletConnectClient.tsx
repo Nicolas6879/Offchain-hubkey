@@ -28,6 +28,7 @@ import {
   verifyMessageSignature
 } from "@hashgraph/hedera-wallet-connect";
 import EventEmitter from "events";
+import authEvents from "../../authEvents";
 
 // Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
 // Reference usage from walletconnect implementation https://github.com/hashgraph/hedera-wallet-connect/blob/main/src/lib/dapp/index.ts#L120C1-L124C9
@@ -211,7 +212,7 @@ export const walletConnectWallet = new WalletConnectWallet();
 // this component will sync the walletconnect state with the context
 export const WalletConnectClient = () => {
   // use the WalletConnectContext to keep track of the account and connection
-  const { setAccountId, setIsConnected } = useContext(WalletConnectContext);
+  const { setAccountId, setIsConnected, setWalletInterface } = useContext(WalletConnectContext);
 
   // sync the walletconnect state with the context
   const syncWithWalletConnectContext = useCallback(() => {
@@ -219,11 +220,19 @@ export const WalletConnectClient = () => {
     if (accountId) {
       setAccountId(accountId);
       setIsConnected(true);
+      setWalletInterface(walletConnectWallet);
+      
+      // Emit wallet connected event
+      authEvents.emitWalletConnected(accountId);
     } else {
       setAccountId('');
       setIsConnected(false);
+      setWalletInterface(null);
+      
+      // Emit wallet disconnected event
+      authEvents.emitWalletDisconnected();
     }
-  }, [setAccountId, setIsConnected]);
+  }, [setAccountId, setIsConnected, setWalletInterface]);
 
   useEffect(() => {
     // Sync after walletconnect finishes initializing

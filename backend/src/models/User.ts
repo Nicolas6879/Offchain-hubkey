@@ -28,6 +28,21 @@ export interface IUser extends Document {
   /** User's display name */
   name?: string;
   
+  /** User's biography/description */
+  bio?: string;
+  
+  /** Encrypted private key for custodial wallet */
+  privateKey?: string;
+  
+  /** Public key for the wallet */
+  publicKey?: string;
+  
+  /** Timestamp when wallet was created */
+  accountCreatedAt?: Date;
+  
+  /** Quick flag to check if user has participated in any event */
+  hasParticipatedInEvent: boolean;
+  
   /** Timestamp when user account was created */
   createdAt: Date;
   
@@ -37,8 +52,14 @@ export interface IUser extends Document {
   /** Array of NFT token IDs owned by the user */
   nftTokenIds: string[];
   
+  /** Token balance for marketplace purchases (hardcoded token: 0.0.2203022) */
+  tokenBalance: number;
+  
   /** Whether the user account is active */
   isActive: boolean;
+  
+  /** User status based on NFT ownership and admin role */
+  status: 'member' | 'registered' | 'admin' | 'blocked';
   
   /** Timestamp when membership was revoked, if applicable */
   membershipRevokedAt?: Date;
@@ -76,6 +97,7 @@ const UserSchema: Schema = new Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -86,13 +108,42 @@ const UserSchema: Schema = new Schema(
       type: String,
       trim: true,
     },
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    privateKey: {
+      type: String,
+      select: false, // Don't include by default in queries for security
+    },
+    publicKey: {
+      type: String,
+    },
+    accountCreatedAt: {
+      type: Date,
+    },
+    hasParticipatedInEvent: {
+      type: Boolean,
+      default: false,
+    },
     nftTokenIds: {
       type: [String],
       default: [],
     },
+    tokenBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
+    },
+    status: {
+      type: String,
+      enum: ['member', 'registered', 'admin', 'blocked'],
+      default: 'registered',
     },
     membershipRevokedAt: {
       type: Date,

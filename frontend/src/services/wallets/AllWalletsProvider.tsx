@@ -4,6 +4,11 @@ import { WalletConnectContextProvider } from "../../contexts/WalletConnectContex
 import { MetaMaskClient } from "./metamask/metamaskClient"
 import { WalletConnectClient } from "./walletconnect/walletConnectClient"
 
+/**
+ * Wallet provider - Supports MetaMask and WalletConnect
+ * Primary auth: Email/password with auto-wallet generation
+ * Secondary option: Connect existing wallet via WalletConnect
+ */
 export const AllWalletsProvider = (props: {
   children: ReactNode | undefined
 }) => {

@@ -1,0 +1,16 @@
+{
+  "userId": "68fe43d99b205f1af4e05d4c",
+  "name": "Fulano",
+  "email": "fulano@email.com",
+  "walletAddress": "0.0.7137615",
+  "tokenId": "0.0.6244686",
+  "serialNumber": 14,
+  "imageUrl": "https://bafybeicoydwwjzuspqqpfdhablqkd2sovuc7rxiciioggoo4uhvvvth6a4.ipfs.w3s.link/ChatGPT%20Image%2028%20de%20jun.%20de%202025%2C%2011_43_46.png",
+  "timestamp": 1761496439536,
+  "compactMetadata": {
+    "u": "68fe43d9",
+    "n": "Fulano",
+    "t": 1761496436
+  },
+  "originalMetadata": "0.0.7137791"
+}

@@ -1,0 +1,17 @@
+{
+  "userId": "68fe67b941dd44d452086209",
+  "name": "sicrano",
+  "email": "sicrano@email.com",
+  "walletAddress": "0.0.7138387",
+  "tokenId": "0.0.6244686",
+  "serialNumber": 15,
+  "imageUrl": "https://bafybeicoydwwjzuspqqpfdhablqkd2sovuc7rxiciioggoo4uhvvvth6a4.ipfs.w3s.link/ChatGPT%20Image%2028%20de%20jun.%20de%202025%2C%2011_43_46.png",
+  "timestamp": 1761503316803,
+  "compactMetadata": {
+    "u": "68fe67b9",
+    "n": "sicrano",
+    "t": 1761503315
+  },
+  "originalMetadata": "0.0.7137791",
+  "transferTimestamp": 1761503318868
+}

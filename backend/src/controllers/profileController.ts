@@ -5,7 +5,9 @@
 
 import { Request, Response } from 'express';
 import User from '../models/User';
+import EventSubscription from '../models/EventSubscription';
 import mongoose from 'mongoose';
+import mintService from '../services/mintService';
 
 /**
  * Get the current user's profile
@@ -15,39 +17,75 @@ import mongoose from 'mongoose';
  */
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    // TEMPORARY: For testing, use a hardcoded test user ID if req.user is not present
-    const userId = req.user?.id || '000000000000000000000001'; // Fallback test ID
+    // Get wallet address from header
+    const walletAddress = req.headers['wallet-address'] as string;
     
-    // Find the first user if no user ID is available (for testing only)
-    let user;
-    if (userId === '000000000000000000000001') {
-      user = await User.findOne().select('-password');
-      if (!user) {
-        // Create dummy user data for testing if no users exist
-        res.status(200).json({
-          success: true,
-          data: {
-            id: '000000000000000000000001',
-            name: 'Test User',
-            email: 'test@example.com',
-            walletAddress: '0x123456789abcdef',
-            nftCount: 1,
-            isActive: true,
-            createdAt: new Date(),
-          },
-        });
-        return;
-      }
-    } else {
-      user = await User.findById(userId).select('-password');
-      if (!user) {
-        res.status(404).json({ success: false, message: 'User not found' });
-        return;
+    if (!walletAddress) {
+      res.status(401).json({ success: false, message: 'Wallet address required' });
+      return;
+    }
+
+    // Find user by wallet address
+    const user = await User.findOne({ 
+      walletAddress: walletAddress.toLowerCase() 
+    }).select('-password');
+    
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    // Get NFT count and primary NFT details
+    const nftCount = user.nftTokenIds.length;
+    let primaryNft = null;
+    
+    if (user.nftTokenIds.length > 0) {
+      const primaryTokenIdFull = user.nftTokenIds[0];
+      try {
+        // Parse tokenId and serialNumber from stored format "tokenId.serialNumber"
+        // Example: "0.0.12345.1" -> tokenId: "0.0.12345", serialNumber: 1
+        const parts = primaryTokenIdFull.split('.');
+        const serialNumber = parts.length > 3 ? parseInt(parts[parts.length - 1]) : 1;
+        const tokenId = parts.length > 3 
+          ? parts.slice(0, parts.length - 1).join('.') 
+          : primaryTokenIdFull;
+        
+        console.log(`Fetching NFT info for tokenId: ${tokenId}, serialNumber: ${serialNumber}`);
+        
+        // Get NFT metadata from Hedera
+        const nftInfo = await mintService.getNFTInfo(tokenId, serialNumber);
+        primaryNft = {
+          tokenId,
+          serialNumber,
+          ...nftInfo,
+        };
+      } catch (error) {
+        console.error('Error fetching primary NFT info:', error);
+        // Still return basic info even if fetch fails
+        const parts = primaryTokenIdFull.split('.');
+        const serialNumber = parts.length > 3 ? parseInt(parts[parts.length - 1]) : 1;
+        const tokenId = parts.length > 3 
+          ? parts.slice(0, parts.length - 1).join('.') 
+          : primaryTokenIdFull;
+        primaryNft = {
+          tokenId,
+          serialNumber,
+        };
       }
     }
 
-    // Get NFT count
-    const nftCount = user.nftTokenIds.length;
+    // Get event statistics
+    const totalEvents = await EventSubscription.countDocuments({ 
+      walletAddress: user.walletAddress.toLowerCase() 
+    });
+    const attendedEvents = await EventSubscription.countDocuments({ 
+      walletAddress: user.walletAddress.toLowerCase(),
+      status: 'attended' 
+    });
+    const upcomingEvents = await EventSubscription.countDocuments({ 
+      walletAddress: user.walletAddress.toLowerCase(),
+      status: 'active' 
+    });
 
     res.status(200).json({
       success: true,
@@ -55,10 +93,17 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
         id: user._id,
         name: user.name,
         email: user.email,
+        bio: user.bio,
         walletAddress: user.walletAddress,
         nftCount,
+        primaryNft,
         isActive: user.isActive,
         createdAt: user.createdAt,
+        stats: {
+          totalEvents,
+          attendedEvents,
+          upcomingEvents,
+        },
       },
     });
   } catch (error) {
@@ -75,64 +120,51 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
  */
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    // TEMPORARY: For testing, use a hardcoded test user ID if req.user is not present
-    const userId = req.user?.id || '000000000000000000000001'; // Fallback test ID
+    // Get wallet address from header
+    const walletAddress = req.headers['wallet-address'] as string;
     
-    const { name, email, phone } = req.body;
+    if (!walletAddress) {
+      res.status(401).json({ success: false, message: 'Wallet address required' });
+      return;
+    }
+    
+    const { name, email, bio } = req.body;
+    
+    // Find user by wallet address
+    const user = await User.findOne({ 
+      walletAddress: walletAddress.toLowerCase() 
+    });
+    
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
     
     // Build update object with only the fields that were provided
     const updateData: Record<string, any> = {};
-    if (name) updateData.name = name;
+    if (name !== undefined) updateData.name = name;
     if (email) updateData.email = email.toLowerCase();
+    if (bio !== undefined) updateData.bio = bio;
     
-    // Find the first user if no user ID is available (for testing only)
-    let updatedUser;
-    if (userId === '000000000000000000000001') {
-      const user = await User.findOne();
-      if (!user) {
-        // Return dummy data for testing if no users exist
-        res.status(200).json({
-          success: true,
-          data: {
-            id: '000000000000000000000001',
-            name: name || 'Test User',
-            email: email || 'test@example.com',
-            walletAddress: '0x123456789abcdef',
-            nftCount: 1,
-            isActive: true,
-            createdAt: new Date(),
-          },
-          message: 'Profile updated successfully (test mode)',
-        });
+    // Check if email already exists for a different user
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email: email.toLowerCase(),
+        _id: { $ne: user._id }
+      });
+      
+      if (existingUser) {
+        res.status(400).json({ success: false, message: 'Email already in use' });
         return;
       }
-      
-      updatedUser = await User.findByIdAndUpdate(
-        user._id,
-        { $set: updateData },
-        { new: true }
-      ).select('-password');
-    } else {
-      // Check if email already exists for a different user
-      if (email) {
-        const existingUser = await User.findOne({ 
-          email: email.toLowerCase(),
-          _id: { $ne: new mongoose.Types.ObjectId(userId) }
-        });
-        
-        if (existingUser) {
-          res.status(400).json({ success: false, message: 'Email already in use' });
-          return;
-        }
-      }
-      
-      // Update the user profile
-      updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $set: updateData },
-        { new: true }
-      ).select('-password');
     }
+    
+    // Update the user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      { $set: updateData },
+      { new: true }
+    ).select('-password');
 
     if (!updatedUser) {
       res.status(404).json({ success: false, message: 'User not found' });
@@ -145,6 +177,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
         id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        bio: updatedUser.bio,
         walletAddress: updatedUser.walletAddress,
         nftCount: updatedUser.nftTokenIds.length,
         isActive: updatedUser.isActive,
@@ -156,4 +189,75 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
     console.error('Error updating profile:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
-}; 
+};
+
+/**
+ * Get the current user's event history
+ * 
+ * @route GET /api/profile/events
+ * @access Private
+ */
+export const getUserEventHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Get wallet address from header
+    const walletAddress = req.headers['wallet-address'] as string;
+    
+    if (!walletAddress) {
+      res.status(401).json({ success: false, message: 'Wallet address required' });
+      return;
+    }
+
+    const user = await User.findOne({ 
+      walletAddress: walletAddress.toLowerCase() 
+    });
+    
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+
+    const { status } = req.query;
+
+    // Build query filter
+    const filter: any = { walletAddress: user.walletAddress.toLowerCase() };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    // Query event subscriptions with populated event details
+    const eventHistory = await EventSubscription.find(filter)
+      .populate('eventId')
+      .sort({ subscribedAt: -1 })
+      .lean();
+
+    // Format response
+    const formattedHistory = eventHistory.map((subscription: any) => ({
+      subscriptionId: subscription._id,
+      status: subscription.status,
+      subscribedAt: subscription.subscribedAt,
+      attendedAt: subscription.attendedAt,
+      rewardSent: subscription.rewardSent,
+      memberNftMinted: subscription.memberNftMinted,
+      event: subscription.eventId ? {
+        id: subscription.eventId._id,
+        name: subscription.eventId.name,
+        description: subscription.eventId.description,
+        location: subscription.eventId.location,
+        photo: subscription.eventId.photo,
+        eventDate: subscription.eventId.eventDate,
+        eventTime: subscription.eventId.eventTime,
+        maxParticipants: subscription.eventId.maxParticipants,
+        currentParticipants: subscription.eventId.currentParticipants,
+      } : null,
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedHistory,
+      count: formattedHistory.length,
+    });
+  } catch (error) {
+    console.error('Error getting event history:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

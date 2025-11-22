@@ -1,0 +1,123 @@
+.eventsub-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: var(--bg-main);
+}
+
+.eventsub-title {
+  font-size: 2rem;
+  color: var(--primary-main);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.eventsub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  justify-items: center;
+}
+
+.event-card {
+  background-color: var(--bg-surface-1);
+  border: 2px solid var(--primary-main);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.event-card-content {
+  padding: 1.5rem;
+  width: 100%;
+  transition: background-color 0.2s ease;
+}
+
+.event-card-content:hover {
+  background-color: var(--bg-surface-2, rgba(0, 0, 0, 0.02));
+}
+
+.event-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.event-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--primary-main);
+}
+
+.event-description,
+.event-location,
+.event-slots {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0.3rem 0;
+}
+
+.event-full-message {
+  color: #ff5555;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.subscribe-button {
+  margin: 0 1.5rem 1.5rem;
+  padding: 0.7rem 1.4rem;
+  background-color: var(--primary-main);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  width: calc(100% - 3rem);
+}
+
+.subscribe-button:hover {
+  background-color: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.subscribe-button:disabled {
+  background-color: var(--bg-surface-2);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .eventsub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .eventsub-grid {
+    grid-template-columns: 1fr;
+  }
+  .event-card {
+    width: 90%;
+  }
+}

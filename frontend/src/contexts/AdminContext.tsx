@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { adminService, AdminCheckResponse } from '../services/adminService';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
+import authEvents from '../services/authEvents';
 
 interface AdminContextType {
   isAdmin: boolean;
@@ -95,6 +96,40 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
     if (storedWallet && !accountId) {
       checkAdminStatus(storedWallet);
     }
+  }, []);
+
+  // Listen to auth events to recheck admin status
+  useEffect(() => {
+    const handleLogin = (data: any) => {
+      console.log('🔄 AdminContext: Login event received, checking admin status...', data);
+      if (data.walletAddress) {
+        checkAdminStatus(data.walletAddress);
+      }
+    };
+
+    const handleLogout = () => {
+      console.log('🔄 AdminContext: Logout event received, clearing admin status...');
+      clearAdminStatus();
+    };
+
+    const handleWalletConnected = (data: any) => {
+      console.log('🔄 AdminContext: Wallet connected event received, checking admin status...', data);
+      if (data.walletAddress) {
+        checkAdminStatus(data.walletAddress);
+      }
+    };
+
+    // Subscribe to auth events
+    const unsubLogin = authEvents.onLogin(handleLogin);
+    const unsubLogout = authEvents.onLogout(handleLogout);
+    const unsubWalletConnected = authEvents.onWalletConnected(handleWalletConnected);
+
+    // Cleanup
+    return () => {
+      unsubLogin();
+      unsubLogout();
+      unsubWalletConnected();
+    };
   }, []);
 
   const contextValue: AdminContextType = {

@@ -4,8 +4,7 @@
  */
 
 import express from 'express';
-import { authenticate } from '../middlewares/auth';
-import { getProfile, updateProfile } from '../controllers/profileController';
+import { getProfile, updateProfile, getUserEventHistory } from '../controllers/profileController';
 
 const router = express.Router();
 
@@ -24,9 +23,18 @@ router.get('/', getProfile);
  * @body {Object} profileData
  * @param {string} [name] - User's display name
  * @param {string} [email] - User's email address
- * @param {string} [phone] - User's phone number
+ * @param {string} [bio] - User's biography
  * @returns {Object} Updated user profile data
  */
 router.put('/', updateProfile);
+
+/**
+ * @route GET /api/profile/events
+ * @description Get the current user's event history
+ * @access Public (uses wallet-address header)
+ * @query {string} [status] - Filter by status (all, active, attended, cancelled)
+ * @returns {Object} Event history data
+ */
+router.get('/events', getUserEventHistory);
 
 export default router; 

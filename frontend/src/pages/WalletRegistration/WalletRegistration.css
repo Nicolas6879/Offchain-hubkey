@@ -1,0 +1,32 @@
+.wallet-registration-page {
+  background: var(--bg-primary);
+}
+
+.wallet-registration-page .MuiPaper-root {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+}
+
+.wallet-registration-page .MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.wallet-registration-page .MuiTextField-root .MuiOutlinedInput-root {
+  background: var(--bg-surface-2);
+}
+
+.wallet-registration-page .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.wallet-registration-page .MuiTextField-root .MuiInputLabel-root {
+  color: var(--text-secondary);
+}
+
+.wallet-registration-page .MuiTextField-root .MuiInputBase-input {
+  color: var(--text-primary);
+}
+
+
+
+

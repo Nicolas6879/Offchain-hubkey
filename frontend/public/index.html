@@ -12,5 +12,20 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    
+    <!-- Suppress harmless ResizeObserver errors -->
+    <script>
+      // This error is harmless and occurs when the browser can't deliver all resize notifications in one frame
+      // It's a known issue with Material-UI and other libraries
+      // See: https://github.com/WICG/resize-observer/issues/38
+      window.addEventListener('error', function(e) {
+        if (e.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+            e.message === 'ResizeObserver loop limit exceeded') {
+          e.stopImmediatePropagation();
+          e.stopPropagation();
+          return false;
+        }
+      });
+    </script>
   </body>
 </html>

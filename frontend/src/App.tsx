@@ -34,7 +34,7 @@ function App() {
               <header>
                 <Navbar />
               </header>
-              <Box flex={1} p={3}>
+              <Box flex={1}>
                 <AppRouter />
               </Box>
             </Box>

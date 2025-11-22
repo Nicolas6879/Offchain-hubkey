@@ -2,10 +2,10 @@ import jwt from 'jsonwebtoken';
 import User, { IUser } from '../models/User';
 import config from '../config/env';
 import emailService from './emailService';
+import walletService from './walletService';
 
 interface SignupParams {
   email: string;
-  walletAddress: string;
   password: string;
   name?: string;
 }
@@ -25,6 +25,11 @@ interface AuthResponse {
     walletAddress: string;
     name?: string;
   };
+  wallet?: {
+    accountId: string;
+    publicKey: string;
+    privateKey: string; // Only returned on signup for QR display
+  };
 }
 
 class AuthService {
@@ -33,24 +38,30 @@ class AuthService {
    */
   async signup(userData: SignupParams): Promise<AuthResponse> {
     try {
-      // Check if user already exists
-      const existingUser = await User.findOne({
-        $or: [{ email: userData.email }, { walletAddress: userData.walletAddress }],
-      });
+      // Check if user already exists by email
+      const existingUser = await User.findOne({ email: userData.email });
 
       if (existingUser) {
         return {
           success: false,
-          message: 'User with this email or wallet address already exists',
+          message: 'User with this email already exists',
         };
       }
 
-      // Create a new user
+      // Generate Hedera wallet for the user
+      console.log('🔐 Generating wallet for new user...');
+      const walletData = await walletService.generateWallet();
+
+      // Create a new user with generated wallet
       const user = new User({
         email: userData.email,
-        walletAddress: userData.walletAddress,
+        walletAddress: walletData.accountId,
         password: userData.password,
         name: userData.name,
+        privateKey: walletData.encryptedPrivateKey,
+        publicKey: walletData.publicKey,
+        accountCreatedAt: new Date(),
+        hasParticipatedInEvent: false,
       });
 
       await user.save();
@@ -61,6 +72,8 @@ class AuthService {
       // Send welcome email
       await this.sendWelcomeEmail(user);
 
+      console.log(`✅ User registered successfully with wallet: ${walletData.accountId}`);
+
       return {
         success: true,
         message: 'User registered successfully',
@@ -70,6 +83,11 @@ class AuthService {
           email: user.email,
           walletAddress: user.walletAddress,
           name: user.name,
+        },
+        wallet: {
+          accountId: walletData.accountId,
+          publicKey: walletData.publicKey,
+          privateKey: walletData.privateKey, // Unencrypted for QR display
         },
       };
     } catch (error) {
@@ -167,6 +185,118 @@ class AuthService {
     } catch (error) {
       console.error('Error sending welcome email:', error);
       return false;
+    }
+  }
+
+  /**
+   * Register a user with an existing wallet (from WalletConnect)
+   */
+  async walletRegister(userData: {
+    email: string;
+    password: string;
+    name?: string;
+    walletAddress: string;
+  }): Promise<AuthResponse> {
+    try {
+      // Check if user already exists by email
+      const existingUserByEmail = await User.findOne({ email: userData.email });
+      if (existingUserByEmail) {
+        return {
+          success: false,
+          message: 'User with this email already exists',
+        };
+      }
+
+      // Check if wallet is already registered
+      const existingUserByWallet = await User.findOne({
+        walletAddress: userData.walletAddress.toLowerCase(),
+      });
+      if (existingUserByWallet) {
+        return {
+          success: false,
+          message: 'This wallet is already registered',
+        };
+      }
+
+      // Create user with provided wallet (no private key since it's external)
+      const user = new User({
+        email: userData.email,
+        walletAddress: userData.walletAddress.toLowerCase(),
+        password: userData.password,
+        name: userData.name,
+        hasParticipatedInEvent: false,
+        // No privateKey or publicKey - user manages their own wallet
+      });
+
+      await user.save();
+
+      // Generate JWT token
+      const token = this.generateToken(user);
+
+      // Send welcome email
+      await this.sendWelcomeEmail(user);
+
+      console.log(`✅ User registered with external wallet: ${userData.walletAddress}`);
+
+      return {
+        success: true,
+        message: 'User registered successfully',
+        token,
+        user: {
+          id: user._id.toString(),
+          email: user.email,
+          walletAddress: user.walletAddress,
+          name: user.name,
+        },
+      };
+    } catch (error) {
+      console.error('Error in wallet registration:', error);
+      throw new Error('Failed to register user with wallet');
+    }
+  }
+
+  /**
+   * Check if a wallet address is already registered
+   */
+  async checkWallet(walletAddress: string): Promise<{
+    success: boolean;
+    exists: boolean;
+    user?: {
+      id: string;
+      email: string;
+      walletAddress: string;
+      name?: string;
+    };
+    token?: string;
+  }> {
+    try {
+      const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+
+      if (user) {
+        // Wallet exists - generate token for auto-login
+        const token = this.generateToken(user);
+
+        return {
+          success: true,
+          exists: true,
+          user: {
+            id: user._id.toString(),
+            email: user.email,
+            walletAddress: user.walletAddress,
+            name: user.name,
+          },
+          token,
+        };
+      }
+
+      // Wallet doesn't exist - needs registration
+      return {
+        success: true,
+        exists: false,
+      };
+    } catch (error) {
+      console.error('Error checking wallet:', error);
+      throw new Error('Failed to check wallet');
     }
   }
 }

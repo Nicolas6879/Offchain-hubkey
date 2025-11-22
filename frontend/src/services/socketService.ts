@@ -1,4 +1,5 @@
-import { io, Socket } from 'socket.io-client';
+import io from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import { appConfig } from '../config';
 
 interface SignatureRequest {
@@ -54,7 +55,7 @@ class SocketService {
       this.notifyConnectionHandlers(false);
     });
 
-    this.socket.on('registered', (data) => {
+    this.socket.on('registered', (data: any) => {
       console.log('Wallet registered with socket:', data);
     });
 
@@ -63,11 +64,11 @@ class SocketService {
       this.notifySignatureRequestHandlers(data);
     });
 
-    this.socket.on('signature_confirmed', (data) => {
+    this.socket.on('signature_confirmed', (data: SignatureResponse) => {
       console.log('Signature confirmed:', data);
     });
 
-    this.socket.on('error', (error) => {
+    this.socket.on('error', (error: unknown) => {
       console.error('Socket error:', error);
     });
   }
@@ -213,4 +214,4 @@ class SocketService {
 export const socketService = new SocketService();
 export default socketService;
 
-export type { SignatureRequest, SignatureResponse }; 
+export type { SignatureRequest, SignatureResponse };

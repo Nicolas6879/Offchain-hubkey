@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   AppBar, 
   Box, 
@@ -15,38 +15,134 @@ import {
 import { 
   Menu as MenuIcon,
   Home as HomeIcon,
-  Dashboard as DashboardIcon,
   PersonAdd as PersonAddIcon,
-  PendingActions as PendingActionsIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon,
+  AccountCircle as AccountCircleIcon,
   Business as HubIcon,
-  CheckCircle as CheckCircleIcon,
-  Edit as EditIcon,
   AdminPanelSettings as AdminPanelSettingsIcon,
   DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon
+  LightMode as LightModeIcon,
+  EventNote as EventNoteIcon,
+  Person as PersonIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Inventory as InventoryIcon
 } from '@mui/icons-material';
-import { useWalletInterface } from '../../services/wallets/useWalletInterface';
 import { useAdminAccess } from '../../contexts/AdminContext';
-import { WalletSelectionDialog } from '../dialogs';
+import { MetamaskContext } from '../../contexts/MetamaskContext';
+import { WalletConnectContext } from '../../contexts/WalletConnectContext';
 import { useNavigate } from 'react-router-dom';
 import { toggleTheme, getCurrentTheme } from '../../utils/themeUtils';
+import authEvents from '../../services/authEvents';
 import '../../pages/landing/LandingPage.css';
-import path from 'path';
 
 const NavBar = () => {
-  const [open, setOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [currentTheme, setCurrentTheme] = useState(() => getCurrentTheme());
-  const { accountId, walletInterface } = useWalletInterface();
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [authMethod, setAuthMethod] = useState<'email' | 'wallet' | null>(null);
   const { hasAdminAccess, isCheckingAdmin } = useAdminAccess();
+  const metamaskCtx = useContext(MetamaskContext);
+  const walletConnectCtx = useContext(WalletConnectContext);
   const navigate = useNavigate();
 
-  const handleConnect = async () => {
-    if (accountId) {
-      walletInterface?.disconnect();
-    } else {
-      setOpen(true);
+  // Check localStorage for logged in user and sync with wallet contexts
+  useEffect(() => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    const storedAuthMethod = localStorage.getItem('authMethod') as 'email' | 'wallet' | null;
+    setWalletAddress(storedWallet);
+    setAuthMethod(storedAuthMethod);
+  }, []);
+
+  // Update wallet address when wallet contexts change
+  useEffect(() => {
+    const connectedWallet = metamaskCtx.metamaskAccountAddress || walletConnectCtx.accountId;
+    if (connectedWallet) {
+      setWalletAddress(connectedWallet);
+      // Also update localStorage to keep in sync
+      localStorage.setItem('walletAddress', connectedWallet);
     }
+  }, [metamaskCtx.metamaskAccountAddress, walletConnectCtx.accountId]);
+
+  // Listen to auth events for real-time updates
+  useEffect(() => {
+    const handleLogin = (data: any) => {
+      console.log('🔄 Navbar: Login event received', data);
+      const storedWallet = localStorage.getItem('walletAddress');
+      const storedAuthMethod = localStorage.getItem('authMethod') as 'email' | 'wallet' | null;
+      setWalletAddress(storedWallet);
+      setAuthMethod(storedAuthMethod);
+    };
+
+    const handleLogout = () => {
+      console.log('🔄 Navbar: Logout event received');
+      setWalletAddress(null);
+      setAuthMethod(null);
+    };
+
+    const handleWalletConnected = (data: any) => {
+      console.log('🔄 Navbar: Wallet connected event received', data);
+      if (data.walletAddress) {
+        setWalletAddress(data.walletAddress);
+        setAuthMethod('wallet');
+      }
+    };
+
+    // Subscribe to auth events
+    const unsubLogin = authEvents.onLogin(handleLogin);
+    const unsubLogout = authEvents.onLogout(handleLogout);
+    const unsubWalletConnected = authEvents.onWalletConnected(handleWalletConnected);
+
+    // Cleanup
+    return () => {
+      unsubLogin();
+      unsubLogout();
+      unsubWalletConnected();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    console.log('Logout iniciado, método de autenticação:', authMethod);
+    
+    // If logged in via wallet, disconnect it
+    if (authMethod === 'wallet') {
+      try {
+        // Disconnect MetaMask if connected
+        if (metamaskCtx.metamaskAccountAddress && metamaskCtx.walletInterface) {
+          console.log('Desconectando MetaMask...');
+          metamaskCtx.walletInterface.disconnect();
+        }
+        
+        // Disconnect WalletConnect if connected
+        if (walletConnectCtx.accountId && walletConnectCtx.walletInterface) {
+          console.log('Desconectando WalletConnect...', walletConnectCtx.accountId);
+          walletConnectCtx.walletInterface.disconnect();
+          console.log('WalletConnect desconectado');
+        }
+        
+        // Give time for wallets to disconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error('Erro ao desconectar carteira:', error);
+      }
+    }
+
+    // Clear all localStorage
+    console.log('Limpando localStorage...');
+    localStorage.removeItem('token');
+    localStorage.removeItem('walletAddress');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('authMethod');
+    
+    setWalletAddress(null);
+    setAuthMethod(null);
+    
+    // Emit logout event to notify all listeners
+    authEvents.emitLogout();
+    
+    console.log('Logout completo, navegando para página inicial');
+    navigate('/');
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -66,12 +162,6 @@ const NavBar = () => {
     const newTheme = toggleTheme();
     setCurrentTheme(newTheme);
   };
-
-  useEffect(() => {
-    if (accountId) {
-      setOpen(false);
-    }
-  }, [accountId]);
 
   // Sincroniza mudanças de tema
   useEffect(() => {
@@ -107,33 +197,46 @@ const NavBar = () => {
       section: 'main'
     },
     {
-      label: 'Meus Dados',
-      icon: <PersonAddIcon />,
-      path: '/join-request',
-      section: 'user'
+      label: 'Eventos',
+      icon: <EventNoteIcon />,
+      path: '/events',
+      section: 'main'
     },
     {
-      label: 'Solicitar Acesso ao Hub',
-      icon: <HubIcon />,
-      path: '/hub-access-request',
-      section: 'user'
+      label: 'Loja',
+      icon: <ShoppingCartIcon />,
+      path: '/loja',
+      section: 'main'
     },
+    // Login/Signup for non-logged users
+    ...(walletAddress ? [] : [
+      {
+        label: 'Login',
+        icon: <LoginIcon />,
+        path: '/login',
+        section: 'auth'
+      },
+      {
+        label: 'Criar Conta',
+        icon: <PersonAddIcon />,
+        path: '/signup',
+        section: 'auth'
+      }
+    ]),
+    // User options for logged in users
+    ...(walletAddress ? [
+      {
+        label: 'Meu Perfil',
+        icon: <PersonIcon />,
+        path: '/profile',
+        section: 'user'
+      }
+    ] : []),
+    // Itens administrativos
     {
-      label: 'Status do Acesso',
-      icon: <CheckCircleIcon />,
-      path: '/hub-access-status',
-      section: 'user'
-    },
-    {
-      label: 'Assinatura em Tempo Real',
-      icon: <EditIcon />,
-      path: '/realtime-signature',
-      section: 'user'
-    },
-    {
-      label: 'Aprovar Solicitações',
+      label: 'Criar Evento',
       icon: <AdminPanelSettingsIcon />,
-      path: '/approve-join',
+      path: '/create-event',
       section: 'admin'
     },
     { label: 'Gerenciar Usuários',
@@ -141,9 +244,20 @@ const NavBar = () => {
       path: '/manage-users',
       section: 'admin'
     },
-    { label: 'Gerenciar Hubs',
+    { label: 'Gerenciar Eventos',
       icon: <AdminPanelSettingsIcon />,
-      path: '/hub-controller',
+      path: '/event-list',
+      section: 'admin'
+    },
+    { label: 'Gerenciar Produtos',
+      icon: <InventoryIcon />,
+      path: '/manage-products',
+      section: 'admin'
+    },
+    {
+      label: 'Gerenciar Vendas',
+      icon: <InventoryIcon />,
+      path: '/sales-control',
       section: 'admin'
     }
   ];
@@ -193,7 +307,7 @@ const NavBar = () => {
           <Box component="span" sx={{ color: 'var(--primary-main)' }}>
             Offchain
           </Box>{' '}
-          Hubs
+          Hub
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -249,49 +363,111 @@ const NavBar = () => {
             {currentTheme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
           
-          <Button 
-            onClick={handleConnect}
-            className="theme-transition"
-            sx={{
-              color: accountId ? 'var(--primary-contrast)' : 'var(--text-primary)',
-              backgroundColor: accountId ? 'var(--primary-main)' : 'transparent',
-              border: `2px solid ${accountId ? 'var(--primary-main)' : 'var(--primary-main)'}`,
-              borderRadius: '25px',
-              px: 3,
-              py: 1,
-              fontWeight: 'bold',
-              fontSize: '0.9rem',
-              textTransform: 'none',
-              position: 'relative',
-              overflow: 'hidden',
-              '&:hover': {
-                backgroundColor: 'var(--primary-main)',
-                color: 'var(--primary-contrast)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 6px 20px hsla(14, 100%, 57%, 0.4)'
-              },
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 0,
-                height: 0,
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                transition: 'width 0.3s ease, height 0.3s ease',
-                pointerEvents: 'none'
-              },
-              '&:hover::before': {
-                width: '300px',
-                height: '300px'
-              },
-              transition: 'all 0.3s ease'
-            }}
-          >
-            {accountId ? accountId : 'Conectar Carteira'}
-          </Button>
+          {walletAddress ? (
+            // Logged in: Show wallet address and logout
+            <>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: 'var(--primary-main)',
+                  color: 'var(--primary-contrast)',
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '25px',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  gap: 0.5
+                }}
+                title={authMethod === 'wallet' ? 'Conectado via WalletConnect' : 'Conectado via Email/Senha'}
+              >
+                <AccountCircleIcon sx={{ fontSize: '18px' }} />
+                {walletAddress}
+                {authMethod === 'wallet' && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontSize: '0.7rem',
+                      opacity: 0.8,
+                      ml: 0.5,
+                    }}
+                  >
+                    (Wallet)
+                  </Typography>
+                )}
+              </Box>
+              <Button
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+                className="theme-transition"
+                sx={{
+                  color: 'var(--text-primary)',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: '25px',
+                  px: 2,
+                  py: 0.75,
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: 'var(--error-main)',
+                    color: 'white',
+                    borderColor: 'var(--error-main)',
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Sair
+              </Button>
+            </>
+          ) : (
+            // Not logged in: Show login and signup buttons
+            <>
+              <Button
+                onClick={() => navigate('/login')}
+                className="theme-transition"
+                sx={{
+                  color: 'var(--text-primary)',
+                  border: '2px solid var(--primary-main)',
+                  borderRadius: '25px',
+                  px: 3,
+                  py: 1,
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: 'var(--primary-main)',
+                    color: 'var(--primary-contrast)',
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                onClick={() => navigate('/signup')}
+                className="theme-transition"
+                sx={{
+                  color: 'var(--primary-contrast)',
+                  backgroundColor: 'var(--primary-main)',
+                  borderRadius: '25px',
+                  px: 3,
+                  py: 1,
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: 'var(--primary-dark)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 20px hsla(14, 100%, 57%, 0.4)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Criar Conta
+              </Button>
+            </>
+          )}
         </Box>
       </Toolbar>
 
@@ -345,42 +521,76 @@ const NavBar = () => {
           ))
         }
         
-        <Divider />
+        {/* Auth Section - Login/Signup */}
+        {!walletAddress && menuItems.filter(item => item.section === 'auth').length > 0 && [
+          <Divider key="auth-divider" />,
+          <Typography 
+            key="auth-title"
+            variant="subtitle2" 
+            sx={{ 
+              px: 2, 
+              py: 1, 
+              color: 'var(--text-secondary)',
+              fontWeight: 'bold',
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em'
+            }}
+          >
+            Conta
+          </Typography>,
+          ...menuItems
+            .filter(item => item.section === 'auth')
+            .map((item) => (
+              <MenuItem key={item.path} onClick={() => handleNavigation(item.path)}>
+                <ListItemIcon>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+              </MenuItem>
+            ))
+        ]}
         
-        {/* Seção do Usuário */}
-        <Typography 
-          variant="subtitle2" 
-          sx={{ 
-            px: 2, 
-            py: 1, 
-            color: 'var(--text-secondary)',
-            fontWeight: 'bold',
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em'
-          }}
-        >
-          Solicitações de Usuário
-        </Typography>
-        
-        {menuItems
-          .filter(item => item.section === 'user')
-          .map((item) => (
-            <MenuItem key={item.path} onClick={() => handleNavigation(item.path)}>
-              <ListItemIcon>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText primary={item.label} />
-            </MenuItem>
-          ))
-        }
+        {/* User Section - For logged in users */}
+        {walletAddress && menuItems.filter(item => item.section === 'user').length > 0 && [
+          <Divider key="user-divider" />,
+          <Typography 
+            key="user-title"
+            variant="subtitle2" 
+            sx={{ 
+              px: 2, 
+              py: 1, 
+              color: 'var(--text-secondary)',
+              fontWeight: 'bold',
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em'
+            }}
+          >
+            Minha Conta
+          </Typography>,
+          ...menuItems
+            .filter(item => item.section === 'user')
+            .map((item) => (
+              <MenuItem key={item.path} onClick={() => handleNavigation(item.path)}>
+                <ListItemIcon>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+              </MenuItem>
+            )),
+          <MenuItem key="logout" onClick={() => { handleMenuClose(); handleLogout(); }}>
+            <ListItemIcon>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Sair" />
+          </MenuItem>
+        ]}
         
         {hasAdminAccess && [
           <Divider key="admin-divider" />,
-          
-          /* Seção Administrativa */
           <Typography 
-            key="admin-section-title"
+            key="admin-title"
             variant="subtitle2" 
             sx={{ 
               px: 2, 
@@ -394,7 +604,6 @@ const NavBar = () => {
           >
             Área Administrativa
           </Typography>,
-          
           ...menuItems
             .filter(item => item.section === 'admin')
             .map((item) => (
@@ -407,8 +616,6 @@ const NavBar = () => {
             ))
         ]}
       </Menu>
-
-      <WalletSelectionDialog open={open} setOpen={setOpen} onClose={() => setOpen(false)} />
     </AppBar>
   );
 };

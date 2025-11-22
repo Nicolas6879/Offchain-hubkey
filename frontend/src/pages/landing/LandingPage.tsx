@@ -9,10 +9,11 @@ import {
   Stack
 } from '@mui/material';
 import { 
-  AccountBalanceWallet as WalletIcon
+  AccountBalanceWallet as WalletIcon,
+  PersonAdd as PersonAddIcon,
+  Login as LoginIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useWalletInterface } from '../../services/wallets/useWalletInterface';
 import { getCurrentTheme } from '../../utils/themeUtils';
 import { AnimatedGradientButton } from '../../components';
 import offchainDark from '../../assets/offchain_dark.png';
@@ -22,8 +23,14 @@ import './LandingPage.css';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { accountId, walletInterface } = useWalletInterface();
   const [currentTheme, setCurrentTheme] = useState(() => getCurrentTheme());
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const storedWallet = localStorage.getItem('walletAddress');
+    setWalletAddress(storedWallet);
+  }, []);
 
   useEffect(() => {
     // Função para atualizar o tema
@@ -55,14 +62,13 @@ const LandingPage: React.FC = () => {
     };
   }, []);
 
-  const handleConnectWallet = () => {
-    if (accountId) {
-      // Se já está conectado, vai para o processo de cadastro
-      navigate('/join-request');
+  const handleGetStarted = () => {
+    if (walletAddress) {
+      // Already logged in, go to events
+      navigate('/events');
     } else {
-      // Se não está conectado, precisa conectar primeiro
-      // O botão de conexão está no navbar, então mostramos uma mensagem
-      alert('Por favor, conecte sua carteira usando o botão "Connect Wallet" no canto superior direito.');
+      // Not logged in, go to signup
+      navigate('/signup');
     }
   };
 
@@ -129,30 +135,64 @@ const LandingPage: React.FC = () => {
                 fontWeight: 'medium'
               }}
             >
-              Conecte sua carteira Hedera • Faça seu cadastro • Seja aprovado
+              Crie sua conta • Carteira criada automaticamente • Participe de eventos
               <br /><br />
               <Box component="span" sx={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
-                ✨ Receba sua NFT de membro ✨
+                ✨ Receba sua NFT de membro no primeiro evento ✨
               </Box>
+              <br />
+              🎁 Ganhe recompensas por participação
               <br />
               🏢 Acesse hubs físicos no Brasil todo
               <br />
               🤝 Faça parte da nossa comunidade Web3
             </Typography>
             
-            <Box sx={{ mt: 4 }}>
-              <AnimatedGradientButton
-                onClick={handleConnectWallet}
-              >
-                {accountId ? 'Começar Meu Cadastro' : 'Conectar Carteira'}
-              </AnimatedGradientButton>
+            <Box sx={{ mt: 4, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {!walletAddress ? (
+                <>
+                  <AnimatedGradientButton
+                    onClick={() => navigate('/signup')}
+                  >
+                    <PersonAddIcon sx={{ mr: 1 }} />
+                    Criar Conta Grátis
+                  </AnimatedGradientButton>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    startIcon={<LoginIcon />}
+                    onClick={() => navigate('/login')}
+                    sx={{
+                      borderColor: 'var(--primary-main)',
+                      color: 'var(--primary-main)',
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold',
+                      borderRadius: '50px',
+                      textTransform: 'none',
+                      '&:hover': {
+                        borderColor: 'var(--primary-dark)',
+                        backgroundColor: 'rgba(var(--primary-main-rgb), 0.1)'
+                      }
+                    }}
+                  >
+                    Já tenho conta
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <AnimatedGradientButton
+                    onClick={() => navigate('/events')}
+                  >
+                    Ver Eventos
+                  </AnimatedGradientButton>
+                  <Typography variant="body2" className="text-secondary" sx={{ alignSelf: 'center' }}>
+                    ✅ Logado como: {walletAddress}
+                  </Typography>
+                </>
+              )}
             </Box>
-            
-            {accountId && (
-              <Typography variant="body2" className="text-secondary">
-                ✅ Carteira conectada: {accountId}
-              </Typography>
-            )}
           </Stack>
         </Box>
       </Box>

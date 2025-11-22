@@ -1,0 +1,17 @@
+.qrscan-page {
+  background: var(--bg-primary);
+}
+
+.qrscan-page .MuiPaper-root {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+}
+
+.qrscan-page .MuiCard-root {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-color);
+}
+
+
+
+

@@ -1,0 +1,32 @@
+.signup-page {
+  background: var(--bg-primary);
+}
+
+.signup-page .MuiPaper-root {
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-color);
+}
+
+.signup-page .MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.signup-page .MuiTextField-root .MuiOutlinedInput-root {
+  background: var(--bg-surface-2);
+}
+
+.signup-page .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color);
+}
+
+.signup-page .MuiTextField-root .MuiInputLabel-root {
+  color: var(--text-secondary);
+}
+
+.signup-page .MuiTextField-root .MuiInputBase-input {
+  color: var(--text-primary);
+}
+
+
+
+

@@ -20,6 +20,14 @@
   --primary-dark: hsl(14, 100%, 47%);   /* Estados ativos */
   --primary-contrast: hsl(0, 0%, 100%); /* Texto sobre primária */
   
+  /* ===== CORES DE FEEDBACK ===== */
+  --success-main: hsl(134, 61%, 41%);   /* Verde - sucesso */
+  --success-light: hsl(134, 61%, 51%);  /* Verde claro */
+  --error-main: hsl(354, 70%, 54%);     /* Vermelho - erro */
+  --error-light: hsl(354, 70%, 64%);    /* Vermelho claro */
+  --warning-main: hsl(45, 100%, 51%);   /* Amarelo - aviso */
+  --warning-light: hsl(45, 100%, 61%);  /* Amarelo claro */
+  
   /* ===== BORDAS E SOMBRAS ===== */
   --border-color: hsl(0, 0%, 15%);
   --border-light: hsl(0, 0%, 20%);

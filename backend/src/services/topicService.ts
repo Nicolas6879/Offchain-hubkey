@@ -86,6 +86,47 @@ class TopicService {
       throw new Error('Failed to submit message to topic');
     }
   }
+
+  /**
+   * Get messages from a topic using Hedera Mirror Node API
+   */
+  async getTopicMessages(topicId: string): Promise<any[]> {
+    try {
+      const network = config.blockchain.network === 'mainnet' ? 'mainnet' : 'testnet';
+      const mirrorNodeUrl = `https://${network}.mirrornode.hedera.com/api/v1/topics/${topicId}/messages`;
+      
+      const response = await fetch(mirrorNodeUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch topic messages: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Decode messages from base64
+      const messages = data.messages?.map((msg: any) => {
+        try {
+          const decodedMessage = Buffer.from(msg.message, 'base64').toString('utf-8');
+          return {
+            ...msg,
+            decodedMessage: JSON.parse(decodedMessage),
+            timestamp: new Date(parseFloat(msg.consensus_timestamp) * 1000).toISOString()
+          };
+        } catch (error) {
+          return {
+            ...msg,
+            decodedMessage: Buffer.from(msg.message, 'base64').toString('utf-8'),
+            timestamp: new Date(parseFloat(msg.consensus_timestamp) * 1000).toISOString()
+          };
+        }
+      }) || [];
+      
+      return messages;
+    } catch (error) {
+      console.error('Error fetching topic messages:', error);
+      throw new Error('Failed to fetch topic messages');
+    }
+  }
 }
 
 export default new TopicService(); 
