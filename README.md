@@ -1,15 +1,15 @@
 # 🧠 Offchain Membership API
 
-API para gerenciar a entrada e identificação de membros via Web3, NFT e integração com hubs físicos parceiros.
+API to manage group entry and member identification via Web3, NFTs and integration with partner physical hubs.
 
 ---
 
 ## 🔧 Endpoints
 
-### 1. 🚪 Solicitação de entrada no grupo
+### 1. 🚪 Join request
 
 **POST /join-request**
-Envia dados do usuário para avaliação manual da equipe.
+Sends user data for manual review by the team.
 
 ```json
 {
@@ -20,31 +20,31 @@ Envia dados do usuário para avaliação manual da equipe.
 }
 ```
 
-### 2. ✅ Aprovação / Rejeição
+### 2. ✅ Approve / Reject
 
-**POST /join-request/\:id/approve**
-**POST /join-request/\:id/reject**
-Aprova ou rejeita o pedido manualmente.
+**POST /join-request/:id/approve**
+**POST /join-request/:id/reject**
+Manually approve or reject the request.
 
 ---
 
-### 3. 🖼️ NFT de Membro
+### 3. 🖼️ Member NFT
 
 **POST /nft/generate-pfp**
-Gera imagem personalizada (PFP).
+Generates a personalized profile picture (PFP).
 
 **POST /nft/mint**
-Realiza o mint da NFT com dados do membro.
+Performs the minting of the member NFT.
 
 **POST /nft/send**
-Envia a NFT para a carteira do usuário.
+Sends the NFT to the user's wallet.
 
 ---
 
-### 4. 🌐 Solicitação de acesso a Hub
+### 4. 🌐 Hub access request
 
 **POST /hub-access/request**
-Usuário solicita acesso a um hub parceiro.
+User requests access to a partner hub.
 
 ```json
 {
@@ -53,34 +53,34 @@ Usuário solicita acesso a um hub parceiro.
 }
 ```
 
-**POST /hub-access/\:id/notify**
-Envia e-mail ao hub com dados do visitante e link para verificação.
+**POST /hub-access/:id/notify**
+Sends an email to the hub with visitor data and a verification link.
 
 ---
 
-### 5. ✍️ Assinatura em tempo real
+### 5. ✍️ Real-time signature
 
 WebSocket API:
 
-* `@RequestUserSignature`: backend solicita assinatura
-* `@ReturnSignedMessage`: usuário responde com a assinatura que é validada e devolvida ao hub
+* `@RequestUserSignature`: backend requests a signature
+* `@ReturnSignedMessage`: user responds with the signature which is validated and returned to the hub
 
 ---
 
-### 6. 📊 Status dos pedidos
+### 6. 📊 Request status
 
-**GET /join-request/status/\:wallet**
-Consulta o status do pedido de entrada.
+**GET /join-request/status/:wallet**
+Check the status of the join request.
 
-**GET /hub-access/status/\:wallet**
-Consulta status de acesso aos hubs parceiros.
+**GET /hub-access/status/:wallet**
+Check the status of access to partner hubs.
 
 ---
 
-### 7. 🗂️ Histórico de acessos
+### 7. 🗂️ Access history
 
-**POST /hub-access/\:id/log**
-Registra uma entrada no hub com timestamp e assinatura.
+**POST /hub-access/:id/log**
+Records a hub entry with timestamp and signature.
 
 ```json
 {
@@ -93,30 +93,30 @@ Registra uma entrada no hub com timestamp e assinatura.
 
 ---
 
-### 8. ❌ Revogação de acesso
+### 8. ❌ Revoke access
 
 **POST /membership/revoke**
-Remove status de membro e/ou invalida NFT.
+Removes member status and/or invalidates the NFT.
 
 ```json
 {
   "walletAddress": "0.0.123456",
-  "reason": "violação de conduta"
+  "reason": "violation of conduct"
 }
 ```
 
 ---
 
-## 🔐 Segurança
+## 🔐 Security
 
-* Todas as ações sensíveis devem ser autenticadas via assinatura da carteira.
-* A metadata da NFT nunca deve conter dados sensíveis em claro.
-* Considerar armazenar dados no IPFS com controle de acesso ou criptografia.
+* All sensitive actions must be authenticated via wallet signature.
+* NFT metadata must never contain sensitive data in plain text.
+* Consider storing data on IPFS with access control or encryption.
 
 ---
 
 ## 📎 Extras
 
-* Possível suporte futuro a Webhooks para hubs.
-* Logs podem ser exportados para relatórios de uso.
-* Acesso revogado pode notificar o usuário automaticamente.
+* Possible future support for webhooks for hubs.
+* Logs can be exported for usage reports.
+* Revoked access can automatically notify the user.
